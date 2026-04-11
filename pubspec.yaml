@@ -38,6 +38,7 @@ dependencies:
   hooks: ^1.0.2
   code_assets: ^1.0.0
   native_toolchain_c: ^0.17.6
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
