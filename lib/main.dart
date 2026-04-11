@@ -1,24 +1,28 @@
 import 'dart:math';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
 import 'xpad.g.dart';
 
 void main() {
-  runApp(MaterialApp(
-    title: 'XPad',
-    theme: ThemeData(
-      colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      /*textTheme: TextTheme(
-        bodyMedium: TextStyle(
-          fontSize: 32,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
-          decoration: TextDecoration.none, // kills the underline
-        ),
-        
-      ),*/
+  runApp(MouseRegion(
+    cursor: kReleaseMode ? SystemMouseCursors.none : SystemMouseCursors.basic,
+    child: MaterialApp(
+      title: 'XPad',
+      theme: ThemeData(
+        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        /*textTheme: TextTheme(
+          bodyMedium: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+            decoration: TextDecoration.none, // kills the underline
+          ),
+          
+        ),*/
+      ),
+      home: HomePage(),
     ),
-    home: HomePage(),
   ));
 }
 
