@@ -1,25 +1,32 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:xpad/services/location/location_service.dart';
+import 'package:xpad/services/weather/weather_service.dart';
 
 import 'xpad.g.dart';
 
-void main() {
+late WeatherService weather;      
+
+Future<void> main() async {
+
+  final location = LocationService();
+  final result = await location.getLocation();                                                                                                                                                                                                           
+  result.when(                                              
+    success: (loc) {                                                                                                                                                                                                                                     
+      // loc.latitude, loc.longitude → feed into WeatherService
+      // loc.city, loc.country → display in UI if you want                                                                                                                                                                                               
+    weather = WeatherService(latitude: loc.latitude, longitude: loc.longitude);
+    },                                                      
+    failure: (error) => print(error.message),                                                                                                                                                                                                            
+  );  
+
   runApp(MouseRegion(
     cursor: kReleaseMode ? SystemMouseCursors.none : SystemMouseCursors.basic,
     child: MaterialApp(
       title: 'XPad',
       theme: ThemeData(
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-        /*textTheme: TextTheme(
-          bodyMedium: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-            decoration: TextDecoration.none, // kills the underline
-          ),
-          
-        ),*/
       ),
       home: HomePage(),
     ),
@@ -46,8 +53,8 @@ class HomePage extends StatelessWidget {
                       color: Colors.grey,
                       child: StreamBuilder(
                         stream: Stream.periodic(Duration(seconds: 1), (_) => DateTime.now()),
-                        builder: (context, snapshot) {
-                          final now = snapshot.data ?? DateTime.now();
+                        builder: (context, asyncSnapshot) {
+                          final now = asyncSnapshot.data ?? DateTime.now();
                           final time = '${now.hour.toString().padLeft(2, '0')}.${now.minute.toString().padLeft(2, '0')}';
                           final date = '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
       
@@ -69,7 +76,22 @@ class HomePage extends StatelessWidget {
                       margin: EdgeInsets.all(16.0),
                       color: Colors.grey,
                       child: Center(
-                        child: TemperatureGauge(current: 10, min: 5, max: 15),
+                        child: StreamBuilder<Result<WeatherData>>(
+                          stream: weather.weatherStream(),
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) {
+                              return CircularProgressIndicator();
+                            }
+                            return snapshot.data!.when(
+                              success: (data) => TemperatureGauge(
+                                current: data.currentTemperature,
+                                min: data.dailyMinTemperature,
+                                max: data.dailyMaxTemperature,
+                              ),
+                              failure: (error) => Text(error.message),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
@@ -220,7 +242,7 @@ class LinearGaugePainter extends CustomPainter {
   bool shouldRepaint(covariant LinearGaugePainter old) => old.value != value;
 }
 
-class TemperatureGauge extends StatelessWidget {
+class TemperatureGauge extends StatefulWidget {
   final double current;
   final double min;
   final double max;
@@ -232,13 +254,18 @@ class TemperatureGauge extends StatelessWidget {
   });
 
   @override
+  State<TemperatureGauge> createState() => _TemperatureGaugeState();
+}
+
+class _TemperatureGaugeState extends State<TemperatureGauge> {
+  @override
   Widget build(BuildContext context) {
     return CustomPaint(
       size: Size(200, 200),
       painter: GaugePainter(
-        current: current,
-        min: min,
-        max: max,
+        current: widget.current,
+        min: widget.min,
+        max: widget.max,
       ),
     );
   }

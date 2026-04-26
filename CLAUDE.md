@@ -8,6 +8,8 @@ xpad is a Flutter app with native C code linked via Dart FFI. It uses the `hooks
 
 ## Architecture
 
+### Native (C → FFI)
+
 - **`native/header/xpad.h`** — C header declaring the native API
 - **`native/src/xpad.c`** — C implementation
 - **`lib/xpad.g.dart`** — Auto-generated FFI bindings (do not edit manually)
@@ -15,6 +17,15 @@ xpad is a Flutter app with native C code linked via Dart FFI. It uses the `hooks
 - **`hook/build.dart`** — Build hook that compiles C sources using `native_toolchain_c`'s `CBuilder`
 
 The flow: C code in `native/` → ffigen generates `lib/xpad.g.dart` → Dart code in `lib/` calls native functions via FFI → `hook/build.dart` compiles the C at build time.
+
+### Dart services
+
+- **`lib/core/result.dart`** — Sealed `Result<T>` type (`Success`/`Failure`) and `AppError` used by all services
+- **`lib/services/weather/weather_service.dart`** — Public `WeatherService` (caching, re-exports models+result)
+- **`lib/services/weather/weather_api.dart`** — HTTP layer for Open-Meteo API
+- **`lib/services/weather/weather_models.dart`** — `WeatherData` and `WeatherCondition` enum
+
+Pattern for new services: create `lib/services/<name>/` with `_service.dart` (public API), `_api.dart` (HTTP), `_models.dart` (data classes). Reuse `Result` and `AppError` from `lib/core/`.
 
 ## Key Commands
 
