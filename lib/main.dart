@@ -16,6 +16,8 @@ const _textLo  = Color(0xFF8888A8);
 const _accent  = Color(0xFFFF6B35);
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  GestureBinding.instance.resamplingEnabled = true;
   final location = LocationService();
   final result = await location.getLocation();
   result.when(
@@ -28,6 +30,7 @@ Future<void> main() async {
   runApp(MouseRegion(
     cursor: kReleaseMode ? SystemMouseCursors.none : SystemMouseCursors.basic,
     child: MaterialApp(
+      showPerformanceOverlay: false,
       title: 'XPad',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
