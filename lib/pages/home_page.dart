@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:xpad/app/theme.dart';
 import 'package:xpad/pages/dashboard_page.dart';
-import 'package:xpad/pages/debug_page.dart';
+import 'package:xpad/pages/settings_page.dart';
 
 class HomePage extends StatefulWidget {
   final VoidCallback onToggleOverlay;
@@ -46,7 +46,7 @@ class _HomePageState extends State<HomePage> {
             controller: _ctrl,
             children: [
               const DashboardPage(),
-              DebugPage(
+              SettingsPage(
                 onToggleOverlay: widget.onToggleOverlay,
                 showPerfOverlay: widget.showPerfOverlay,
               ),

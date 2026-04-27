@@ -25,9 +25,11 @@ static void my_application_activate(GApplication* application) {
 
   gtk_window_set_decorated(window, FALSE);
   gtk_window_set_title(window, "xpad");
+#ifdef NDEBUG
   gtk_window_fullscreen(window);
+#endif
 
-  gtk_window_set_default_size(window, 1280, 720);
+  gtk_window_set_default_size(window, 800, 480);
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(
