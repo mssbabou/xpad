@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:xpad/app/theme.dart';
 import 'package:xpad/pages/dashboard_page.dart';
 import 'package:xpad/pages/settings_page.dart';
+import 'package:xpad/pages/spotify_page.dart';
 
 class HomePage extends StatefulWidget {
   final VoidCallback onToggleOverlay;
@@ -50,6 +51,7 @@ class _HomePageState extends State<HomePage> {
                 onToggleOverlay: widget.onToggleOverlay,
                 showPerfOverlay: widget.showPerfOverlay,
               ),
+              const SpotifyPage(),
             ],
           ),
           Positioned(
@@ -58,7 +60,7 @@ class _HomePageState extends State<HomePage> {
             right: 0,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(2, (i) => Container(
+              children: List.generate(3, (i) => Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 width: 7,
                 height: 7,

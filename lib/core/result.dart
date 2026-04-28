@@ -27,6 +27,7 @@ enum ErrorKind {
   network,
   server,
   parsing,
+  auth,
   unknown,
 }
 

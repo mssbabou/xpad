@@ -6,6 +6,7 @@ import 'package:xpad/app/app_state.dart';
 import 'package:xpad/app/theme.dart';
 import 'package:xpad/pages/home_page.dart';
 import 'package:xpad/services/location/location_service.dart';
+import 'package:xpad/services/spotify/spotify_service.dart';
 import 'package:xpad/services/weather/weather_service.dart';
 
 Future<void> main() async {
@@ -23,6 +24,9 @@ Future<void> main() async {
     },
     failure: (error) => debugPrint(error.message),
   );
+
+  spotifyService = SpotifyService();
+  await spotifyService.initialize();
 
   runApp(const MyApp());
 }
