@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:xpad/app/theme.dart';
 import 'package:xpad/pages/settings/debug_settings_page.dart';
+import 'package:xpad/pages/settings/octoprint_settings_page.dart';
 import 'package:xpad/pages/settings/wifi_settings_page.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -26,6 +27,13 @@ class SettingsPage extends StatelessWidget {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const WifiSettingsPage()),
+            ),
+          ),
+          _SettingsItem(
+            label: 'OctoPrint',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const OctoPrintSettingsPage()),
             ),
           ),
           _SettingsItem(

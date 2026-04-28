@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:xpad/app/theme.dart';
 import 'package:xpad/pages/dashboard_page.dart';
+import 'package:xpad/pages/octoprint_page.dart';
 import 'package:xpad/pages/settings_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -46,6 +47,7 @@ class _HomePageState extends State<HomePage> {
             controller: _ctrl,
             children: [
               const DashboardPage(),
+              const OctoPrintPage(),
               SettingsPage(
                 onToggleOverlay: widget.onToggleOverlay,
                 showPerfOverlay: widget.showPerfOverlay,
@@ -58,7 +60,7 @@ class _HomePageState extends State<HomePage> {
             right: 0,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(2, (i) => Container(
+              children: List.generate(3, (i) => Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 width: 7,
                 height: 7,

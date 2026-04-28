@@ -7,6 +7,8 @@ import 'package:xpad/app/theme.dart';
 import 'package:xpad/pages/home_page.dart';
 import 'package:xpad/services/location/location_service.dart';
 import 'package:xpad/services/weather/weather_service.dart';
+import 'package:xpad/widgets/keyboard_service.dart';
+import 'package:xpad/widgets/on_screen_keyboard.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +16,8 @@ Future<void> main() async {
 
   final info = await PackageInfo.fromPlatform();
   kAppVersion = '${info.version}+${info.buildNumber}';
+
+  await octoprintService.initialize();
 
   final location = LocationService();
   final result = await location.getLocation();
@@ -56,6 +60,30 @@ class _MyAppState extends State<MyApp> {
             PointerDeviceKind.touch,
             PointerDeviceKind.mouse,
             PointerDeviceKind.trackpad,
+          },
+        ),
+        builder: (context, child) => ListenableBuilder(
+          listenable: keyboardService,
+          builder: (context, _) {
+            final h = keyboardService.isVisible
+                ? KeyboardService.keyboardHeight
+                : 0.0;
+            return Stack(
+              children: [
+                MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    viewInsets: EdgeInsets.only(bottom: h),
+                  ),
+                  child: child!,
+                ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: OnScreenKeyboard(),
+                ),
+              ],
+            );
           },
         ),
         home: HomePage(
