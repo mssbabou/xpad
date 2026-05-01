@@ -3,6 +3,7 @@ import 'package:xpad/app/app_state.dart';
 import 'package:xpad/app/theme.dart';
 import 'package:xpad/services/location/geocoding_api.dart';
 import 'package:xpad/services/location/location_models.dart';
+import 'package:xpad/widgets/settings_card.dart';
 
 class GeneralSettingsPage extends StatefulWidget {
   const GeneralSettingsPage({super.key});
@@ -171,44 +172,6 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
   }
 }
 
-// ── Card shell ────────────────────────────────────────────────────────────────
-
-class _Card extends StatelessWidget {
-  final String label;
-  final Widget child;
-
-  const _Card({required this.label, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: border),
-      ),
-      padding: const EdgeInsets.fromLTRB(28, 22, 28, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label.toUpperCase(),
-            style: const TextStyle(
-              color: textLo,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.6,
-            ),
-          ),
-          const SizedBox(height: 14),
-          child,
-        ],
-      ),
-    );
-  }
-}
-
 // ── Location card ─────────────────────────────────────────────────────────────
 
 class _LocationCard extends StatelessWidget {
@@ -238,7 +201,7 @@ class _LocationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Card(
+    return SettingsCard(
       label: 'Location',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

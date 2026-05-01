@@ -45,7 +45,7 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
           _SettingsItem(
-            label: 'Debug',
+            label: 'Developer Menu',
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(

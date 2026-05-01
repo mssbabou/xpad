@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:xpad/app/app_state.dart';
 import 'package:xpad/app/theme.dart';
-import 'package:xpad/core/result.dart';
 import 'package:xpad/pages/settings/octoprint_settings_page.dart';
 import 'package:xpad/services/octoprint/octoprint_service.dart';
 

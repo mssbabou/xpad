@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:xpad/app/app_state.dart';
 import 'package:xpad/app/theme.dart';
+import 'package:xpad/widgets/settings_card.dart';
 
 class OctoPrintSettingsPage extends StatefulWidget {
   const OctoPrintSettingsPage({super.key});
@@ -74,7 +75,7 @@ class _OctoPrintSettingsPageState extends State<OctoPrintSettingsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _Card(
+            SettingsCard(
               label: 'SERVER',
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,7 +90,7 @@ class _OctoPrintSettingsPageState extends State<OctoPrintSettingsPage> {
               ),
             ),
             const SizedBox(height: 14),
-            _Card(
+            SettingsCard(
               label: 'API KEY',
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,35 +144,6 @@ class _OctoPrintSettingsPageState extends State<OctoPrintSettingsPage> {
             ],
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _Card extends StatelessWidget {
-  final String label;
-  final Widget child;
-  const _Card({required this.label, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label,
-              style: const TextStyle(
-                  color: textLo, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.6)),
-          const SizedBox(height: 10),
-          child,
-        ],
       ),
     );
   }

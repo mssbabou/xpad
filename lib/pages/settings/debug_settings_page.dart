@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:xpad/app/app_state.dart';
 import 'package:xpad/app/theme.dart';
 import 'package:xpad/widgets/app_toggle.dart';
+import 'package:xpad/widgets/settings_card.dart';
 
 class DebugSettingsPage extends StatelessWidget {
   final VoidCallback onToggleOverlay;
@@ -26,7 +27,7 @@ class DebugSettingsPage extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Debug',
+          'Developer Menu',
           style: TextStyle(color: textHi, fontWeight: FontWeight.w600),
         ),
         elevation: 0,
@@ -64,44 +65,6 @@ class DebugSettingsPage extends StatelessWidget {
   }
 }
 
-// ── Shared card shell ─────────────────────────────────────────────────────────
-
-class _Card extends StatelessWidget {
-  final String label;
-  final Widget child;
-
-  const _Card({required this.label, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: border),
-      ),
-      padding: const EdgeInsets.fromLTRB(28, 22, 28, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label.toUpperCase(),
-            style: const TextStyle(
-              color: textLo,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.6,
-            ),
-          ),
-          const SizedBox(height: 14),
-          child,
-        ],
-      ),
-    );
-  }
-}
-
 // ── System info ───────────────────────────────────────────────────────────────
 
 class _InfoCard extends StatelessWidget {
@@ -119,7 +82,7 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Card(
+    return SettingsCard(
       label: 'System',
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -147,7 +110,7 @@ class _OverlayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Card(
+    return SettingsCard(
       label: 'Overlay',
       child: Row(
         children: [
@@ -191,7 +154,7 @@ class _WeatherCardState extends State<_WeatherCard> {
 
   @override
   Widget build(BuildContext context) {
-    return _Card(
+    return SettingsCard(
       label: 'Weather',
       child: GestureDetector(
         onTap: _refreshing ? null : _refresh,
@@ -258,7 +221,7 @@ class _AirQualityCardState extends State<_AirQualityCard> {
 
   @override
   Widget build(BuildContext context) {
-    return _Card(
+    return SettingsCard(
       label: 'Air Quality',
       child: GestureDetector(
         onTap: _refreshing ? null : _refresh,
@@ -291,7 +254,7 @@ class _AirQualityCardState extends State<_AirQualityCard> {
 class _ControlCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return _Card(
+    return SettingsCard(
       label: 'Control',
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,

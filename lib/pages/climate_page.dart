@@ -5,24 +5,7 @@ import 'package:xpad/services/air_quality/air_quality_service.dart';
 import 'package:xpad/services/weather/weather_service.dart';
 import 'package:xpad/widgets/dash_card.dart';
 import 'package:xpad/widgets/gauges.dart';
-
-// Maps each WeatherCondition to the closest Material icon.
-// Lives here in the UI layer so the data model stays Flutter-free.
-extension _ConditionIcon on WeatherCondition {
-  IconData get icon => switch (this) {
-    WeatherCondition.clearSky      => Icons.wb_sunny,
-    WeatherCondition.mainlyClear   => Icons.wb_sunny,
-    WeatherCondition.partlyCloudy  => Icons.cloud_queue,
-    WeatherCondition.overcast      => Icons.cloud,
-    WeatherCondition.fog           => Icons.blur_on,
-    WeatherCondition.drizzle       => Icons.grain,
-    WeatherCondition.rain          => Icons.water_drop,
-    WeatherCondition.freezingRain  => Icons.ac_unit,
-    WeatherCondition.snow          => Icons.ac_unit,
-    WeatherCondition.showers       => Icons.water_drop,
-    WeatherCondition.thunderstorm  => Icons.thunderstorm,
-  };
-}
+import 'package:xpad/widgets/weather_condition_icon.dart';
 
 class ClimatePage extends StatelessWidget {
   const ClimatePage({super.key});

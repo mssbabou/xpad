@@ -3,6 +3,7 @@ import 'package:xpad/core/result.dart';
 import 'package:xpad/services/octoprint/octoprint_api.dart';
 import 'package:xpad/services/octoprint/octoprint_models.dart';
 
+export 'package:xpad/core/result.dart';
 export 'package:xpad/services/octoprint/octoprint_models.dart';
 
 class OctoPrintService {
