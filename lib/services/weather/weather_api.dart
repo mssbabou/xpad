@@ -95,7 +95,7 @@ class WeatherApi {
 
       final now = DateTime.now();
       final hourlyForecast = <HourlyWeather>[];
-      for (var i = 0; i < hourlyTimes.length && hourlyForecast.length < 5; i++) {
+      for (var i = 0; i < hourlyTimes.length && hourlyForecast.length < 8; i++) {
         final t = DateTime.parse(hourlyTimes[i]);
         if (!t.isBefore(DateTime(now.year, now.month, now.day, now.hour))) {
           hourlyForecast.add(HourlyWeather(

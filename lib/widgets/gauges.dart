@@ -30,16 +30,6 @@ class LinearGaugePainter extends CustomPainter {
     Color(0xFFDC2626),
   ];
 
-  static Color _sample(double t) {
-    if (t <= _stops.first) return _colors.first;
-    if (t >= _stops.last)  return _colors.last;
-    for (var i = 0; i < _stops.length - 1; i++) {
-      final a = _stops[i], b = _stops[i + 1];
-      if (t <= b) return Color.lerp(_colors[i], _colors[i + 1], (t - a) / (b - a))!;
-    }
-    return _colors.last;
-  }
-
   @override
   void paint(Canvas canvas, Size size) {
     const barHeight = 20.0;
@@ -47,13 +37,6 @@ class LinearGaugePainter extends CustomPainter {
     final radius = Radius.circular(barHeight / 2);
     final rect = Rect.fromLTWH(0, barTop, size.width, barHeight);
     final barRect = RRect.fromRectAndRadius(rect, radius);
-
-    if (value > 0) {
-      final glowPaint = Paint()
-        ..color = _sample(value).withValues(alpha: 0.30)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
-      canvas.drawRRect(barRect, glowPaint);
-    }
 
     canvas.drawRRect(barRect, Paint()..color = const Color(0xFFE4E4EE));
 

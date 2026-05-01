@@ -2,14 +2,21 @@ import 'indoor_models.dart';
 
 export 'indoor_models.dart';
 
-/// Provides indoor temperature and humidity from a connected sensor.
-/// Currently yields null — wire up real hardware here when available.
+/// Provides indoor sensor data. Currently yields stub values — wire up real hardware here.
 class IndoorSensorService {
   Stream<IndoorData?> sensorStream({
     Duration interval = const Duration(seconds: 30),
   }) async* {
-    yield IndoorData(temperature: 21.4, humidity: 58, fetchedAt: DateTime.now());
-    yield* Stream.periodic(interval).asyncMap((_) async =>
-        IndoorData(temperature: 21.4, humidity: 58, fetchedAt: DateTime.now()));
+    yield _stub();
+    yield* Stream.periodic(interval).asyncMap((_) async => _stub());
   }
+
+  IndoorData _stub() => IndoorData(
+        temperature: 21.4,
+        humidity: 58,
+        eco2: 412,
+        tvoc: 95,
+        pressure: 1013.2,
+        fetchedAt: DateTime.now(),
+      );
 }
