@@ -165,11 +165,26 @@ class _MustinessSection extends StatelessWidget {
           failure: (_) => 0.0,
         ) ?? 0.0;
 
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final size = constraints.maxWidth.clamp(80.0, 180.0);
-            return MustinessGauge(value: value, size: size);
-          },
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'AIR QUALITY',
+              style: TextStyle(
+                color: textLo,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.6,
+              ),
+            ),
+            const SizedBox(height: 8),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final size = constraints.maxWidth.clamp(80.0, 180.0);
+                return MustinessGauge(value: value, size: size);
+              },
+            ),
+          ],
         );
       },
     );

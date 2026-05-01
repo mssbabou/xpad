@@ -51,7 +51,19 @@ class _IndoorPollenBlock extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 20, child: LinearGauge(value: 0)),
+                    SizedBox(
+                      height: 20,
+                      child: StreamBuilder<Result<AirQualityData>>(
+                        stream: airQuality.airQualityStream(),
+                        builder: (context, snapshot) {
+                          final fraction = snapshot.data?.when(
+                            success: (d) => d.aqiFraction,
+                            failure: (_) => 0.0,
+                          ) ?? 0.0;
+                          return LinearGauge(value: fraction);
+                        },
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

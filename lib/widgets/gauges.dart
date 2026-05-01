@@ -156,6 +156,23 @@ class _MustinessGaugePainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     )..layout();
     poorP.paint(canvas, Offset(endPt.dx - poorP.width / 2, endPt.dy + 6));
+
+    final iconPainter = TextPainter(
+      text: TextSpan(
+        text: String.fromCharCode(Icons.air_rounded.codePoint),
+        style: TextStyle(
+          color: textLo,
+          fontSize: size.width * 0.28,
+          fontFamily: Icons.air_rounded.fontFamily,
+          package: Icons.air_rounded.fontPackage,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    iconPainter.paint(
+      canvas,
+      Offset(center.dx - iconPainter.width / 2, center.dy - iconPainter.height / 2),
+    );
   }
 
   @override
