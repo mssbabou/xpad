@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:xpad/app/theme.dart';
+import 'package:xpad/pages/climate_page.dart';
 import 'package:xpad/pages/dashboard_page.dart';
 import 'package:xpad/pages/octoprint_page.dart';
 import 'package:xpad/pages/settings_page.dart';
@@ -47,6 +48,7 @@ class _HomePageState extends State<HomePage> {
             controller: _ctrl,
             children: [
               const DashboardPage(),
+              const ClimatePage(),
               const OctoPrintPage(),
               SettingsPage(
                 onToggleOverlay: widget.onToggleOverlay,
@@ -60,7 +62,7 @@ class _HomePageState extends State<HomePage> {
             right: 0,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(3, (i) => Container(
+              children: List.generate(4, (i) => Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 width: 7,
                 height: 7,

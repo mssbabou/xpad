@@ -1,3 +1,15 @@
+class HourlyWeather {
+  final DateTime time;
+  final double temperature;
+  final WeatherCondition condition;
+
+  const HourlyWeather({
+    required this.time,
+    required this.temperature,
+    required this.condition,
+  });
+}
+
 /// Immutable snapshot of current weather at a location.
 /// Every field is non-nullable — a missing API value fails at parse time
 /// rather than propagating nulls through the widget tree.
@@ -5,16 +17,24 @@ class WeatherData {
   final double currentTemperature;
   final double dailyMinTemperature;
   final double dailyMaxTemperature;
+  final double apparentTemperature;
   final int relativeHumidity;
   final WeatherCondition condition;
+  final List<HourlyWeather> hourlyForecast;
+  final DateTime sunrise;
+  final DateTime sunset;
   final DateTime fetchedAt;
 
   const WeatherData({
     required this.currentTemperature,
     required this.dailyMinTemperature,
     required this.dailyMaxTemperature,
+    required this.apparentTemperature,
     required this.relativeHumidity,
     required this.condition,
+    required this.hourlyForecast,
+    required this.sunrise,
+    required this.sunset,
     required this.fetchedAt,
   });
 

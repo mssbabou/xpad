@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:xpad/app/theme.dart';
 import 'package:xpad/pages/settings/debug_settings_page.dart';
+import 'package:xpad/pages/settings/general_settings_page.dart';
 import 'package:xpad/pages/settings/octoprint_settings_page.dart';
 import 'package:xpad/pages/settings/wifi_settings_page.dart';
 
@@ -22,6 +23,13 @@ class SettingsPage extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         children: [
           const SizedBox(height: 12),
+          _SettingsItem(
+            label: 'General',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const GeneralSettingsPage()),
+            ),
+          ),
           _SettingsItem(
             label: 'Wi-Fi',
             onTap: () => Navigator.push(

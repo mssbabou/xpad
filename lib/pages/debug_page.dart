@@ -45,7 +45,7 @@ class DebugPage extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: DashCard(label: 'Weather', child: _WeatherDebugCard()),
+                  child: DashCard(label: 'Data', child: _DataRefreshCard()),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -165,24 +165,70 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-// ── Weather force-refresh ─────────────────────────────────────────────────────
+// ── Weather + Air Quality force-refresh ───────────────────────────────────────
 
-class _WeatherDebugCard extends StatefulWidget {
+class _DataRefreshCard extends StatelessWidget {
   @override
-  State<_WeatherDebugCard> createState() => _WeatherDebugCardState();
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _RefreshButton(
+          icon: Icons.cloud_sync_rounded,
+          label: 'Weather',
+          onRefresh: () async {
+            weather.clearCache();
+            await weather.getCurrentWeather(forceRefresh: true);
+            return null;
+          },
+          snackLabel: 'Weather refreshed',
+        ),
+        _RefreshButton(
+          icon: Icons.air_rounded,
+          label: 'Air Quality',
+          onRefresh: () async {
+            airQuality.clearCache();
+            final result = await airQuality.getCurrentAirQuality(forceRefresh: true);
+            return result.when(
+              success: (data) => 'AQI ${data.europeanAqi}',
+              failure: (_) => null,
+            );
+          },
+          snackLabel: 'Air quality refreshed',
+        ),
+      ],
+    );
+  }
 }
 
-class _WeatherDebugCardState extends State<_WeatherDebugCard> {
+class _RefreshButton extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final Future<String?> Function() onRefresh;
+  final String snackLabel;
+
+  const _RefreshButton({
+    required this.icon,
+    required this.label,
+    required this.onRefresh,
+    required this.snackLabel,
+  });
+
+  @override
+  State<_RefreshButton> createState() => _RefreshButtonState();
+}
+
+class _RefreshButtonState extends State<_RefreshButton> {
   bool _refreshing = false;
 
   Future<void> _refresh() async {
     setState(() => _refreshing = true);
-    weather.clearCache();
-    await weather.getCurrentWeather(forceRefresh: true);
+    final extra = await widget.onRefresh();
     if (mounted) {
       setState(() => _refreshing = false);
+      final label = extra != null ? '${widget.snackLabel} — $extra' : widget.snackLabel;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text('Weather refreshed'),
+        content: Text(label),
         backgroundColor: textHi,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -212,13 +258,13 @@ class _WeatherDebugCardState extends State<_WeatherDebugCard> {
                     padding: EdgeInsets.all(20),
                     child: CircularProgressIndicator(color: accent, strokeWidth: 2),
                   )
-                : const Icon(Icons.cloud_sync_rounded, size: 32, color: textLo),
+                : Icon(widget.icon, size: 32, color: textLo),
           ),
         ),
         const SizedBox(height: 16),
-        const Text(
-          'Force Refresh',
-          style: TextStyle(color: textLo, fontSize: 13, fontWeight: FontWeight.w400),
+        Text(
+          widget.label,
+          style: const TextStyle(color: textLo, fontSize: 11, fontWeight: FontWeight.w400),
         ),
       ],
     );

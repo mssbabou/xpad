@@ -49,6 +49,8 @@ class DebugSettingsPage extends StatelessWidget {
                   ),
                   const SizedBox(width: 16),
                   Expanded(child: _WeatherCard()),
+                  const SizedBox(width: 16),
+                  Expanded(child: _AirQualityCard()),
                 ],
               ),
             ),
@@ -212,6 +214,70 @@ class _WeatherCardState extends State<_WeatherCard> {
             const Text(
               'Refresh',
               style: TextStyle(color: textLo, fontSize: 12, letterSpacing: 0.8),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Air quality force-refresh ─────────────────────────────────────────────────
+
+class _AirQualityCard extends StatefulWidget {
+  @override
+  State<_AirQualityCard> createState() => _AirQualityCardState();
+}
+
+class _AirQualityCardState extends State<_AirQualityCard> {
+  bool _refreshing = false;
+  String? _lastAqi;
+
+  Future<void> _refresh() async {
+    setState(() => _refreshing = true);
+    airQuality.clearCache();
+    final result = await airQuality.getCurrentAirQuality(forceRefresh: true);
+    if (mounted) {
+      final label = result.when(
+        success: (data) => 'AQI ${data.europeanAqi} — ${data.level.label}',
+        failure: (e) => e.message,
+      );
+      setState(() {
+        _refreshing = false;
+        _lastAqi = label;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(label),
+        backgroundColor: textHi,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+      ));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _Card(
+      label: 'Air Quality',
+      child: GestureDetector(
+        onTap: _refreshing ? null : _refresh,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (_refreshing)
+              const SizedBox(
+                width: 36,
+                height: 36,
+                child: CircularProgressIndicator(color: accent, strokeWidth: 2),
+              )
+            else
+              Icon(Icons.air_rounded, size: 36, color: textHi),
+            const SizedBox(height: 8),
+            Text(
+              _lastAqi ?? 'Refresh',
+              style: const TextStyle(color: textLo, fontSize: 12, letterSpacing: 0.8),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

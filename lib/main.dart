@@ -5,6 +5,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:xpad/app/app_state.dart';
 import 'package:xpad/app/theme.dart';
 import 'package:xpad/pages/home_page.dart';
+import 'package:xpad/services/air_quality/air_quality_service.dart';
 import 'package:xpad/services/location/location_service.dart';
 import 'package:xpad/services/weather/weather_service.dart';
 import 'package:xpad/widgets/keyboard_service.dart';
@@ -19,11 +20,12 @@ Future<void> main() async {
 
   await octoprintService.initialize();
 
-  final location = LocationService();
-  final result = await location.getLocation();
+  locationService = LocationService();
+  final result = await locationService.getLocation();
   result.when(
     success: (loc) {
       weather = WeatherService(latitude: loc.latitude, longitude: loc.longitude);
+      airQuality = AirQualityService(latitude: loc.latitude, longitude: loc.longitude);
     },
     failure: (error) => debugPrint(error.message),
   );

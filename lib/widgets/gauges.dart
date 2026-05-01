@@ -76,6 +76,92 @@ class LinearGaugePainter extends CustomPainter {
   bool shouldRepaint(covariant LinearGaugePainter old) => old.value != value;
 }
 
+// ── Mustiness arc gauge ───────────────────────────────────────────────────────
+
+class MustinessGauge extends StatelessWidget {
+  final double value;
+  final double size;
+
+  const MustinessGauge({super.key, required this.value, this.size = 150});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size(size, size),
+      painter: _MustinessGaugePainter(value: value.clamp(0.0, 1.0)),
+    );
+  }
+}
+
+class _MustinessGaugePainter extends CustomPainter {
+  final double value;
+
+  _MustinessGaugePainter({required this.value});
+
+  static const _trackColor = Color(0xFFE0E0EA);
+  static const _fillStart  = Color(0xFFCDD0E6);
+  static const _fillEnd    = Color(0xFF6870B8);
+  static const _dotColor   = Color(0xFF8888A8);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 12;
+    const startAngle = 2.356;
+    const sweep     = 4.712;
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      startAngle, sweep, false,
+      Paint()
+        ..color = _trackColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 10
+        ..strokeCap = StrokeCap.round,
+    );
+
+    if (value > 0) {
+      final arcRect = Rect.fromCircle(center: center, radius: radius);
+      canvas.drawArc(
+        arcRect, startAngle, sweep * value, false,
+        Paint()
+          ..shader = LinearGradient(colors: [_fillStart, _fillEnd])
+              .createShader(arcRect)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 10
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+
+    final angle     = startAngle + value * sweep;
+    final dotCenter = Offset(
+      center.dx + radius * cos(angle),
+      center.dy + radius * sin(angle),
+    );
+    canvas.drawCircle(dotCenter, 6, Paint()..color = _dotColor);
+    canvas.drawCircle(dotCenter, 3, Paint()..color = Colors.white);
+
+    const labelStyle = TextStyle(color: textLo, fontSize: 12, fontWeight: FontWeight.w400);
+    final startPt = Offset(center.dx + radius * cos(startAngle), center.dy + radius * sin(startAngle));
+    final endPt   = Offset(center.dx + radius * cos(startAngle + sweep), center.dy + radius * sin(startAngle + sweep));
+
+    final freshP = TextPainter(
+      text: const TextSpan(text: 'Fresh', style: labelStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    freshP.paint(canvas, Offset(startPt.dx - freshP.width / 2, startPt.dy + 6));
+
+    final poorP = TextPainter(
+      text: const TextSpan(text: 'Poor', style: labelStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    poorP.paint(canvas, Offset(endPt.dx - poorP.width / 2, endPt.dy + 6));
+  }
+
+  @override
+  bool shouldRepaint(covariant _MustinessGaugePainter old) => old.value != value;
+}
+
 // ── Temperature arc gauge ─────────────────────────────────────────────────────
 
 class TemperatureGauge extends StatelessWidget {
