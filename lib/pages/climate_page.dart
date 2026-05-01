@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:xpad/app/app_state.dart';
 import 'package:xpad/app/theme.dart';
 import 'package:xpad/services/air_quality/air_quality_service.dart';
+import 'package:xpad/services/indoor/indoor_service.dart';
 import 'package:xpad/services/weather/weather_service.dart';
 import 'package:xpad/widgets/dash_card.dart';
 import 'package:xpad/widgets/gauges.dart';
@@ -37,48 +38,58 @@ class _IndoorPollenBlock extends StatelessWidget {
         children: [
           SizedBox(
             width: 200,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    _BigStat(value: '—', unit: '°C', label: 'Temp'),
-                    const SizedBox(width: 28),
-                    _BigStat(value: '—', unit: '%', label: 'Humidity'),
-                  ],
-                ),
-                Column(
+            child: StreamBuilder<IndoorData?>(
+              stream: indoorSensorService.sensorStream(),
+              builder: (context, snapshot) {
+                final data = snapshot.data;
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      height: 20,
-                      child: StreamBuilder<Result<AirQualityData>>(
-                        stream: airQuality.airQualityStream(),
-                        builder: (context, snapshot) {
-                          final fraction = snapshot.data?.when(
-                            success: (d) => d.aqiFraction,
-                            failure: (_) => 0.0,
-                          ) ?? 0.0;
-                          return LinearGauge(value: fraction);
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Row(
                       children: [
-                        Text('Fresh', style: TextStyle(color: textLo, fontSize: 11)),
-                        Text('Poor',  style: TextStyle(color: textLo, fontSize: 11)),
+                        _BigStat(
+                          value: data != null ? '${data.temperature.round()}' : '—',
+                          unit: '°C',
+                          label: 'Temp',
+                        ),
+                        const SizedBox(width: 28),
+                        _BigStat(
+                          value: data != null ? '${data.humidity.round()}' : '—',
+                          unit: '%',
+                          label: 'Humidity',
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: 20,
+                          child: StreamBuilder<Result<AirQualityData>>(
+                            stream: airQuality.airQualityStream(),
+                            builder: (context, snapshot) {
+                              final fraction = snapshot.data?.when(
+                                success: (d) => d.aqiFraction,
+                                failure: (_) => 0.0,
+                              ) ?? 0.0;
+                              return LinearGauge(value: fraction);
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Fresh', style: TextStyle(color: textLo, fontSize: 11)),
+                            Text('Poor',  style: TextStyle(color: textLo, fontSize: 11)),
+                          ],
+                        ),
                       ],
                     ),
                   ],
-                ),
-                const Text(
-                  'No sensor connected',
-                  style: TextStyle(color: textLo, fontSize: 11, fontStyle: FontStyle.italic),
-                ),
-              ],
+                );
+              },
             ),
           ),
           Padding(

@@ -44,5 +44,8 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Generated — run `dart run tool/ffigen.dart` to regenerate
+lib/xpad.g.dart
+
 #AI
 .claude/

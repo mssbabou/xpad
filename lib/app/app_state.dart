@@ -1,4 +1,5 @@
 import 'package:xpad/services/air_quality/air_quality_service.dart';
+import 'package:xpad/services/indoor/indoor_service.dart';
 import 'package:xpad/services/location/location_service.dart';
 import 'package:xpad/services/octoprint/octoprint_service.dart';
 import 'package:xpad/services/system/system_service.dart';
@@ -12,3 +13,4 @@ late String kAppVersion;
 final systemService = SystemService();
 final octoprintService = OctoPrintService();
 final keyboardService = KeyboardService();
+final indoorSensorService = IndoorSensorService();
