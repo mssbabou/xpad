@@ -3,6 +3,7 @@ import 'package:xpad/app/theme.dart';
 import 'package:xpad/pages/settings/debug_settings_page.dart';
 import 'package:xpad/pages/settings/display_settings_page.dart';
 import 'package:xpad/pages/settings/general_settings_page.dart';
+import 'package:xpad/pages/settings/hue_settings_page.dart';
 import 'package:xpad/pages/settings/octoprint_settings_page.dart';
 import 'package:xpad/pages/settings/wifi_settings_page.dart';
 
@@ -36,6 +37,12 @@ class SettingsPage extends StatelessWidget {
         label: 'OctoPrint',
         onTap: () => Navigator.push(context,
             MaterialPageRoute(builder: (_) => const OctoPrintSettingsPage())),
+      ),
+      _Item(
+        icon: Icons.lightbulb_rounded,
+        label: 'Philips Hue',
+        onTap: () => Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const HueSettingsPage())),
       ),
       _Item(
         icon: Icons.brightness_medium_rounded,

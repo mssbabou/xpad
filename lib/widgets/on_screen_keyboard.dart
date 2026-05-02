@@ -21,22 +21,16 @@ class _OnScreenKeyboardState extends State<OnScreenKeyboard> {
     final value = controller.value;
     final start = value.selection.start;
     final end = value.selection.end;
-
     if (start < 0) return;
 
     final before = value.text.substring(0, start);
     final after = value.text.substring(end);
-    final newText = before + text + after;
-    final newPos = start + text.length;
-
     controller.value = TextEditingValue(
-      text: newText,
-      selection: TextSelection.collapsed(offset: newPos),
+      text: before + text + after,
+      selection: TextSelection.collapsed(offset: start + text.length),
     );
 
-    if (_capsOn && text.length == 1) {
-      setState(() => _capsOn = false);
-    }
+    if (_capsOn && text.length == 1) setState(() => _capsOn = false);
   }
 
   void _delete() {
@@ -46,26 +40,19 @@ class _OnScreenKeyboardState extends State<OnScreenKeyboard> {
     final value = controller.value;
     final start = value.selection.start;
     final end = value.selection.end;
-
     if (start < 0) return;
 
     final actualStart = start == end ? (start > 0 ? start - 1 : 0) : start;
     if (actualStart == start && start == 0) return;
 
-    final before = value.text.substring(0, actualStart);
-    final after = value.text.substring(end);
-    final newText = before + after;
-
     controller.value = TextEditingValue(
-      text: newText,
+      text: value.text.substring(0, actualStart) + value.text.substring(end),
       selection: TextSelection.collapsed(offset: actualStart),
     );
   }
 
   void _enter() {
-    if (keyboardService.activeFocusNode?.nextFocus() == true) {
-      return;
-    }
+    if (keyboardService.activeFocusNode?.nextFocus() == true) return;
     keyboardService.hide();
   }
 
@@ -74,20 +61,30 @@ class _OnScreenKeyboardState extends State<OnScreenKeyboard> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       height: keyboardService.isVisible ? KeyboardService.keyboardHeight : 0,
-      color: bg,
+      clipBehavior: Clip.hardEdge,
+      decoration: const BoxDecoration(),
       child: keyboardService.isVisible
-          ? SingleChildScrollView(
+          ? Material(
+              color: bg,
               child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: _numbersMode ? _NumbersLayout() : _LettersLayout(
-                  capsOn: _capsOn,
-                  onToggleCaps: () => setState(() => _capsOn = !_capsOn),
-                  onInsert: _insertText,
-                  onDelete: _delete,
-                  onEnter: _enter,
-                  onToggleMode: () => setState(() => _numbersMode = !_numbersMode),
-                  onClose: () => keyboardService.hide(),
-                ),
+                padding: const EdgeInsets.fromLTRB(6, 6, 6, 8),
+                child: _numbersMode
+                    ? _NumbersLayout(
+                        onInsert: _insertText,
+                        onDelete: _delete,
+                        onEnter: _enter,
+                        onToggleMode: () => setState(() => _numbersMode = false),
+                        onClose: () => keyboardService.hide(),
+                      )
+                    : _LettersLayout(
+                        capsOn: _capsOn,
+                        onToggleCaps: () => setState(() => _capsOn = !_capsOn),
+                        onInsert: _insertText,
+                        onDelete: _delete,
+                        onEnter: _enter,
+                        onToggleMode: () => setState(() => _numbersMode = true),
+                        onClose: () => keyboardService.hide(),
+                      ),
               ),
             )
           : const SizedBox.shrink(),
@@ -128,65 +125,35 @@ class _LettersLayout extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         for (final row in rows)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                for (final key in row)
-                  _KeyButton(
-                    label: _displayLabel(key),
-                    onTap: () => _handleKey(key),
-                    isAction: key == '⌫' || key == '↵' || key == '⇧',
-                    flex: key == '↵' ? 2 : 1,
-                  ),
-              ],
-            ),
-          ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _KeyButton(
-                label: '123',
-                onTap: onToggleMode,
-                isAction: true,
-                flex: 1,
+          _Row(children: [
+            for (final key in row)
+              _Key(
+                label: _label(key),
+                onTap: () => _handle(key),
+                isAction: key == '⌫' || key == '↵' || key == '⇧',
+                flex: key == '↵' ? 2 : 1,
               ),
-              _KeyButton(
-                label: '                ',
-                onTap: () => onInsert(' '),
-                isAction: false,
-                flex: 4,
-              ),
-              _KeyButton(
-                label: '✕',
-                onTap: onClose,
-                isAction: true,
-                flex: 1,
-              ),
-            ],
-          ),
-        ),
+          ]),
+        _Row(children: [
+          _Key(label: '123', onTap: onToggleMode, isAction: true, flex: 1),
+          _Key(label: ' ', onTap: () => onInsert(' '), isAction: false, flex: 4),
+          _Key(label: '✕', onTap: onClose, isAction: true, flex: 1),
+        ]),
       ],
     );
   }
 
-  String _displayLabel(String key) {
-    if (key == '⌫' || key == '↵' || key == '⇧' || key == '123') return key;
+  String _label(String key) {
+    if (key == '⌫' || key == '↵' || key == '⇧') return key;
     return capsOn ? key.toUpperCase() : key;
   }
 
-  void _handleKey(String key) {
-    if (key == '⌫') {
-      onDelete();
-    } else if (key == '↵') {
-      onEnter();
-    } else if (key == '⇧') {
-      onToggleCaps();
-    } else {
-      onInsert(_displayLabel(key));
+  void _handle(String key) {
+    switch (key) {
+      case '⌫': onDelete();
+      case '↵': onEnter();
+      case '⇧': onToggleCaps();
+      default: onInsert(_label(key));
     }
   }
 }
@@ -194,7 +161,19 @@ class _LettersLayout extends StatelessWidget {
 // ── Numbers layout ────────────────────────────────────────────────────────────
 
 class _NumbersLayout extends StatelessWidget {
-  const _NumbersLayout();
+  final void Function(String) onInsert;
+  final VoidCallback onDelete;
+  final VoidCallback onEnter;
+  final VoidCallback onToggleMode;
+  final VoidCallback onClose;
+
+  const _NumbersLayout({
+    required this.onInsert,
+    required this.onDelete,
+    required this.onEnter,
+    required this.onToggleMode,
+    required this.onClose,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -208,106 +187,55 @@ class _NumbersLayout extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         for (final row in rows)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                for (final key in row)
-                  _KeyButton(
-                    label: key,
-                    onTap: () => _handleKey(key),
-                    isAction: key == '⌫' || key == '↵',
-                    flex: key == '↵' ? 2 : 1,
-                  ),
-              ],
-            ),
-          ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _KeyButton(
-                label: 'ABC',
-                onTap: () => Navigator.of(context).pop(),
-                isAction: true,
-                flex: 1,
+          _Row(children: [
+            for (final key in row)
+              _Key(
+                label: key,
+                onTap: () => _handle(key),
+                isAction: key == '⌫' || key == '↵',
+                flex: key == '↵' ? 2 : 1,
               ),
-              _KeyButton(
-                label: '                ',
-                onTap: () {
-                  final controller = keyboardService.activeController;
-                  if (controller == null) return;
-                  final value = controller.value;
-                  final start = value.selection.start;
-                  final end = value.selection.end;
-                  if (start < 0) return;
-                  final before = value.text.substring(0, start);
-                  final after = value.text.substring(end);
-                  final newText = '$before $after';
-                  controller.value = TextEditingValue(
-                    text: newText,
-                    selection: TextSelection.collapsed(offset: start + 1),
-                  );
-                },
-                isAction: false,
-                flex: 4,
-              ),
-              _KeyButton(
-                label: '✕',
-                onTap: () => keyboardService.hide(),
-                isAction: true,
-                flex: 1,
-              ),
-            ],
-          ),
-        ),
+          ]),
+        _Row(children: [
+          _Key(label: 'ABC', onTap: onToggleMode, isAction: true, flex: 1),
+          _Key(label: ' ', onTap: () => onInsert(' '), isAction: false, flex: 4),
+          _Key(label: '✕', onTap: onClose, isAction: true, flex: 1),
+        ]),
       ],
     );
   }
 
-  void _handleKey(String key) {
-    final controller = keyboardService.activeController;
-    if (controller == null) return;
-
-    if (key == '⌫') {
-      final value = controller.value;
-      final start = value.selection.start;
-      if (start <= 0) return;
-      final before = value.text.substring(0, start - 1);
-      final after = value.text.substring(value.selection.end);
-      controller.value = TextEditingValue(
-        text: before + after,
-        selection: TextSelection.collapsed(offset: start - 1),
-      );
-    } else if (key == '↵') {
-      keyboardService.activeFocusNode?.nextFocus();
-    } else {
-      final value = controller.value;
-      final start = value.selection.start;
-      final end = value.selection.end;
-      if (start < 0) return;
-      final before = value.text.substring(0, start);
-      final after = value.text.substring(end);
-      final newText = before + key + after;
-      controller.value = TextEditingValue(
-        text: newText,
-        selection: TextSelection.collapsed(offset: start + key.length),
-      );
+  void _handle(String key) {
+    switch (key) {
+      case '⌫': onDelete();
+      case '↵': onEnter();
+      default: onInsert(key);
     }
   }
 }
 
-// ── Key button ────────────────────────────────────────────────────────────────
+// ── Shared layout helpers ──────────────────────────────────────────────────────
 
-class _KeyButton extends StatelessWidget {
+class _Row extends StatelessWidget {
+  final List<Widget> children;
+  const _Row({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(children: children),
+    );
+  }
+}
+
+class _Key extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
   final bool isAction;
   final int flex;
 
-  const _KeyButton({
+  const _Key({
     required this.label,
     required this.onTap,
     required this.isAction,
@@ -321,19 +249,20 @@ class _KeyButton extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          height: 44,
+          height: 40,
+          margin: const EdgeInsets.symmetric(horizontal: 2),
           decoration: BoxDecoration(
-            color: isAction ? accent : surface,
-            border: Border.all(color: border),
+            color: isAction ? const Color(0xFFE8EAF6) : surface,
             borderRadius: BorderRadius.circular(8),
           ),
           alignment: Alignment.center,
           child: Text(
             label,
             style: TextStyle(
-              color: isAction ? Colors.white : textHi,
-              fontSize: isAction ? 11 : 13,
-              fontWeight: FontWeight.w600,
+              color: isAction ? accent : textHi,
+              fontSize: 14,
+              fontWeight: isAction ? FontWeight.w600 : FontWeight.w500,
+              decoration: TextDecoration.none,
             ),
           ),
         ),

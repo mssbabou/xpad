@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:xpad/app/app_state.dart';
 import 'package:xpad/app/theme.dart';
 import 'package:xpad/services/air_quality/air_quality_service.dart';
+import 'package:xpad/services/hue/hue_service.dart';
 import 'package:xpad/services/indoor/indoor_service.dart';
+import 'package:xpad/widgets/app_toggle.dart';
 import 'package:xpad/widgets/dash_card.dart';
 import 'package:xpad/widgets/gauges.dart';
 
@@ -152,22 +154,138 @@ class _IndoorSection extends StatelessWidget {
 
 // ── Lights card ───────────────────────────────────────────────────────────────
 
-class _LightsCard extends StatelessWidget {
+class _LightsCard extends StatefulWidget {
+  @override
+  State<_LightsCard> createState() => _LightsCardState();
+}
+
+class _LightsCardState extends State<_LightsCard> {
+  List<HueLight>? _lights;
+  bool _loading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    if (hueService.isConfigured) _fetch();
+  }
+
+  Future<void> _fetch() async {
+    setState(() { _loading = true; _error = null; });
+    final result = await hueService.getLights();
+    if (!mounted) return;
+    result.when(
+      success: (lights) => setState(() { _lights = lights; _loading = false; }),
+      failure: (e) => setState(() { _error = e.message; _loading = false; }),
+    );
+  }
+
+  Future<void> _toggle(String id, bool on) async {
+    setState(() {
+      _lights = _lights?.map((l) => l.id == id ? l.copyWith(state: l.state.copyWith(on: on)) : l).toList();
+    });
+    await hueService.toggleLight(id, on);
+  }
+
   @override
   Widget build(BuildContext context) {
     return DashCard(
       label: 'Lights',
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Icon(Icons.lightbulb_outline_rounded, color: textLo, size: 18),
-          SizedBox(width: 10),
-          Text(
-            'Philips Hue — coming soon',
-            style: TextStyle(color: textLo, fontSize: 13, fontStyle: FontStyle.italic),
+      child: _buildContent(),
+    );
+  }
+
+  Widget _buildContent() {
+    if (!hueService.isConfigured) {
+      return const Center(
+        child: Text(
+          'Configure in Settings → Philips Hue',
+          style: TextStyle(color: textLo, fontSize: 13, fontStyle: FontStyle.italic),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    if (_loading) {
+      return const Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(color: accent, strokeWidth: 2),
+        ),
+      );
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(_error!, style: const TextStyle(color: textLo, fontSize: 13), textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: _fetch,
+              child: const Text('Retry', style: TextStyle(color: accent, fontSize: 13, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final lights = _lights;
+    if (lights == null || lights.isEmpty) {
+      return Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('No lights found', style: TextStyle(color: textLo, fontSize: 13)),
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: _fetch,
+              child: const Icon(Icons.refresh_rounded, color: accent, size: 18),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.separated(
+            itemCount: lights.length,
+            separatorBuilder: (_, _) => const Divider(height: 1, thickness: 1, color: border),
+            itemBuilder: (context, i) {
+              final light = lights[i];
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        light.name,
+                        style: const TextStyle(color: textHi, fontSize: 14, fontWeight: FontWeight.w400),
+                      ),
+                    ),
+                    AppToggle(
+                      value: light.state.on,
+                      onChanged: (v) => _toggle(light.id, v),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 4),
+        Align(
+          alignment: Alignment.centerRight,
+          child: GestureDetector(
+            onTap: _fetch,
+            child: const Icon(Icons.refresh_rounded, color: textLo, size: 16),
+          ),
+        ),
+      ],
     );
   }
 }

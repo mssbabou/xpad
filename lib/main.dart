@@ -19,6 +19,7 @@ Future<void> main() async {
   kAppVersion = '${info.version}+${info.buildNumber}';
 
   await octoprintService.initialize();
+  await hueService.initialize();
 
   locationService = LocationService();
   final result = await locationService.getLocation();

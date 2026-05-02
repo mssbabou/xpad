@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class KeyboardService extends ChangeNotifier {
-  static const double keyboardHeight = 300.0;
+  static const double keyboardHeight = 200.0;
 
   bool isVisible = false;
   TextEditingController? activeController;
