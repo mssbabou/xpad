@@ -14,6 +14,8 @@ class DisplaySpecs {
 /// Persists auto-brightness preference to SharedPreferences.
 class DisplayService {
   static const _keyAuto = 'display_auto_brightness';
+  static const _keyReturnEnabled = 'return_to_home_enabled';
+  static const _keyReturnDelay = 'return_to_home_delay_seconds';
   static const _backlightBase = '/sys/class/backlight';
 
   Future<Directory?> _backlightDir() async {
@@ -54,6 +56,26 @@ class DisplayService {
   Future<void> setAutoBrightness(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyAuto, value);
+  }
+
+  Future<bool> getReturnToHome() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keyReturnEnabled) ?? true;
+  }
+
+  Future<void> setReturnToHome(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyReturnEnabled, value);
+  }
+
+  Future<int> getReturnDelay() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_keyReturnDelay) ?? 300;
+  }
+
+  Future<void> setReturnDelay(int seconds) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_keyReturnDelay, seconds);
   }
 
   Future<DisplaySpecs> getSpecs() async {

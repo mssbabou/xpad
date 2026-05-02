@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:xpad/app/app_state.dart';
 import 'package:xpad/app/theme.dart';
 import 'package:xpad/pages/smart_home_page.dart';
 import 'package:xpad/pages/weather_page.dart';
@@ -22,21 +23,62 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with RouteAware {
   final _ctrl = PageController(initialPage: 1);
   int _page = 1;
   bool _dotsVisible = false;
   Timer? _hideTimer;
+  Timer? _inactivityTimer;
+  bool _returnEnabled = true;
+  int _returnDelaySeconds = 300;
 
   @override
   void initState() {
     super.initState();
     _ctrl.addListener(_onScroll);
+    _loadReturnConfig();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+  }
+
+  @override
+  void didPushNext() => _inactivityTimer?.cancel();
+
+  @override
+  void didPopNext() => _resetInactivityTimer();
+
+  Future<void> _loadReturnConfig() async {
+    final enabled = await displayService.getReturnToHome();
+    final delay = await displayService.getReturnDelay();
+    if (!mounted) return;
+    _returnEnabled = enabled;
+    _returnDelaySeconds = delay;
+    _resetInactivityTimer();
+  }
+
+  void _resetInactivityTimer() {
+    _inactivityTimer?.cancel();
+    if (!_returnEnabled) return;
+    _inactivityTimer = Timer(Duration(seconds: _returnDelaySeconds), _goHome);
+  }
+
+  void _goHome() {
+    if (!mounted || _ctrl.page?.round() == 1) return;
+    _ctrl.animateToPage(1,
+        duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
   }
 
   void _onScroll() {
     final p = _ctrl.page?.round() ?? 0;
-    if (p != _page) setState(() => _page = p);
+    if (p != _page) {
+      setState(() => _page = p);
+      // Reload config when leaving settings in case it changed
+      if (_page != 4) _loadReturnConfig();
+    }
 
     if (!_dotsVisible) setState(() => _dotsVisible = true);
     _hideTimer?.cancel();
@@ -47,7 +89,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     _hideTimer?.cancel();
+    _inactivityTimer?.cancel();
     _ctrl.removeListener(_onScroll);
     _ctrl.dispose();
     super.dispose();
@@ -55,7 +99,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Listener(
+      onPointerDown: (_) => _resetInactivityTimer(),
+      child: Scaffold(
       backgroundColor: bg,
       body: Stack(
         children: [
@@ -97,6 +143,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-    );
+    ));
   }
 }

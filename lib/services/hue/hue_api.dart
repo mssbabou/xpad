@@ -140,40 +140,15 @@ class HueApi {
         return Failure(AppError(kind: ErrorKind.unknown, message: 'No bridges found on this network'));
       }
 
-      // Filter to only bridges actually reachable on the local network
-      final reachable = (await Future.wait(
-        candidates.map((ip) => _isReachable(ip)),
-      ))
-          .asMap()
-          .entries
-          .where((e) => e.value)
-          .map((e) => candidates[e.key])
-          .toList();
-
-      if (reachable.isEmpty) {
-        return Failure(AppError(kind: ErrorKind.unknown, message: 'No reachable bridges found — ${candidates.length} stale entries ignored'));
-      }
-
-      return Success(reachable);
+      return Success(candidates);
     } on Exception catch (e) {
       return Failure(AppError(
         kind: ErrorKind.network,
-        message: 'Discovery failed — check internet connection',
-        debugDetail: e.toString(),
+        message: 'Discovery failed: ${e.toString()}',
       ));
     }
   }
 
-  Future<bool> _isReachable(String ip) async {
-    try {
-      final response = await _client
-          .get(Uri.parse('http://$ip/api/config'))
-          .timeout(const Duration(seconds: 3));
-      return response.statusCode == 200;
-    } on Exception {
-      return false;
-    }
-  }
 
   void dispose() => _client.close();
 }

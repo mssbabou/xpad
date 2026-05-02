@@ -54,6 +54,7 @@ class _MyAppState extends State<MyApp> {
         showPerformanceOverlay: _showPerfOverlay,
         title: 'XPad',
         debugShowCheckedModeBanner: false,
+        navigatorObservers: [routeObserver],
         theme: ThemeData(
           scaffoldBackgroundColor: bg,
           colorScheme: const ColorScheme.light(surface: surface, primary: accent),

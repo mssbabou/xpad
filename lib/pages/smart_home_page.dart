@@ -1,10 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:xpad/app/app_state.dart';
 import 'package:xpad/app/theme.dart';
 import 'package:xpad/services/air_quality/air_quality_service.dart';
 import 'package:xpad/services/hue/hue_service.dart';
 import 'package:xpad/services/indoor/indoor_service.dart';
-import 'package:xpad/widgets/app_toggle.dart';
 import 'package:xpad/widgets/dash_card.dart';
 import 'package:xpad/widgets/gauges.dart';
 
@@ -163,11 +164,21 @@ class _LightsCardState extends State<_LightsCard> {
   List<HueLight>? _lights;
   bool _loading = false;
   String? _error;
+  Timer? _pollTimer;
 
   @override
   void initState() {
     super.initState();
-    if (hueService.isConfigured) _fetch();
+    if (hueService.isConfigured) {
+      _fetch();
+      _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) => _poll());
+    }
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _fetch() async {
@@ -177,6 +188,15 @@ class _LightsCardState extends State<_LightsCard> {
     result.when(
       success: (lights) => setState(() { _lights = lights; _loading = false; }),
       failure: (e) => setState(() { _error = e.message; _loading = false; }),
+    );
+  }
+
+  Future<void> _poll() async {
+    final result = await hueService.getLights();
+    if (!mounted) return;
+    result.when(
+      success: (lights) => setState(() => _lights = lights),
+      failure: (_) {},
     );
   }
 
@@ -252,29 +272,18 @@ class _LightsCardState extends State<_LightsCard> {
     return Column(
       children: [
         Expanded(
-          child: ListView.separated(
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 110,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 0.9,
+            ),
             itemCount: lights.length,
-            separatorBuilder: (_, _) => const Divider(height: 1, thickness: 1, color: border),
-            itemBuilder: (context, i) {
-              final light = lights[i];
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        light.name,
-                        style: const TextStyle(color: textHi, fontSize: 14, fontWeight: FontWeight.w400),
-                      ),
-                    ),
-                    AppToggle(
-                      value: light.state.on,
-                      onChanged: (v) => _toggle(light.id, v),
-                    ),
-                  ],
-                ),
-              );
-            },
+            itemBuilder: (context, i) => _LightTile(
+              light: lights[i],
+              onTap: () => _toggle(lights[i].id, !lights[i].state.on),
+            ),
           ),
         ),
         const SizedBox(height: 4),
@@ -286,6 +295,55 @@ class _LightsCardState extends State<_LightsCard> {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ── Light tile ────────────────────────────────────────────────────────────────
+
+class _LightTile extends StatelessWidget {
+  final HueLight light;
+  final VoidCallback onTap;
+
+  const _LightTile({required this.light, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final on = light.state.on;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          color: on ? const Color(0xFFFFF8E7) : surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: on ? const Color(0xFFFFD95A) : border),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              on ? Icons.lightbulb_rounded : Icons.lightbulb_outline_rounded,
+              color: on ? const Color(0xFFFFB800) : textLo,
+              size: 28,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              light.name,
+              style: TextStyle(
+                color: on ? const Color(0xFF7A5800) : textLo,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                height: 1.3,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

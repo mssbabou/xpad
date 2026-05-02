@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:xpad/services/air_quality/air_quality_service.dart';
 import 'package:xpad/services/display/display_service.dart';
 import 'package:xpad/services/hue/hue_service.dart';
@@ -18,3 +19,4 @@ final hueService = HueService();
 final keyboardService = KeyboardService();
 final indoorSensorService = IndoorSensorService();
 final displayService = DisplayService();
+final routeObserver = RouteObserver<ModalRoute<void>>();

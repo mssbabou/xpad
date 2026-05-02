@@ -3,6 +3,7 @@ import 'package:xpad/app/app_state.dart';
 import 'package:xpad/app/theme.dart';
 import 'package:xpad/services/location/geocoding_api.dart';
 import 'package:xpad/services/location/location_models.dart';
+import 'package:xpad/widgets/app_toggle.dart';
 import 'package:xpad/widgets/settings_card.dart';
 
 class GeneralSettingsPage extends StatefulWidget {
@@ -23,6 +24,9 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
   bool _resetting = false;
   String? _errorMessage;
   String? _successMessage;
+  bool _returnEnabled = true;
+  int _returnDelaySeconds = 300;
+  bool _returnConfigLoaded = false;
 
   @override
   void initState() {
@@ -33,9 +37,14 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
   Future<void> _loadCurrentState() async {
     final isManual = await locationService.isManualOverride();
     final result = await locationService.getLocation();
+    final returnEnabled = await displayService.getReturnToHome();
+    final returnDelay = await displayService.getReturnDelay();
     if (!mounted) return;
     setState(() {
       _isManual = isManual;
+      _returnEnabled = returnEnabled;
+      _returnDelaySeconds = returnDelay;
+      _returnConfigLoaded = true;
       result.when(
         success: (loc) {
           _currentLocation = loc;
@@ -124,6 +133,16 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
     );
   }
 
+  Future<void> _setReturnEnabled(bool value) async {
+    setState(() => _returnEnabled = value);
+    await displayService.setReturnToHome(value);
+  }
+
+  Future<void> _setReturnDelay(int seconds) async {
+    setState(() => _returnDelaySeconds = seconds);
+    await displayService.setReturnDelay(seconds);
+  }
+
   @override
   void dispose() {
     _cityController.dispose();
@@ -153,6 +172,14 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (_returnConfigLoaded)
+              _ReturnToHomeCard(
+                enabled: _returnEnabled,
+                delaySeconds: _returnDelaySeconds,
+                onToggle: _setReturnEnabled,
+                onDelayChanged: _setReturnDelay,
+              ),
+            if (_returnConfigLoaded) const SizedBox(height: 20),
             _LocationCard(
               cityController: _cityController,
               countryController: _countryController,
@@ -166,6 +193,95 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
               onReset: _resetToAuto,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Return to home card ───────────────────────────────────────────────────────
+
+class _ReturnToHomeCard extends StatelessWidget {
+  final bool enabled;
+  final int delaySeconds;
+  final ValueChanged<bool> onToggle;
+  final ValueChanged<int> onDelayChanged;
+
+  const _ReturnToHomeCard({
+    required this.enabled,
+    required this.delaySeconds,
+    required this.onToggle,
+    required this.onDelayChanged,
+  });
+
+  static const _options = [30, 60, 120, 300, 600];
+  static const _labels = ['30s', '1m', '2m', '5m', '10m'];
+
+  @override
+  Widget build(BuildContext context) {
+    return SettingsCard(
+      label: 'Return to Home',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Auto-return to dashboard',
+                  style: TextStyle(color: textHi, fontSize: 15),
+                ),
+              ),
+              AppToggle(value: enabled, onChanged: onToggle),
+            ],
+          ),
+          if (enabled) ...[
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                for (int i = 0; i < _options.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 8),
+                  _DelayChip(
+                    label: _labels[i],
+                    selected: delaySeconds == _options[i],
+                    onTap: () => onDelayChanged(_options[i]),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DelayChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _DelayChip({required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected ? accent : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: selected ? accent : border),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.white : textLo,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
