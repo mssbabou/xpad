@@ -37,10 +37,10 @@ dependencies:
   ffigen: ^20.1.1
   hooks: ^1.0.2
   code_assets: ^1.0.0
-  native_toolchain_c: ^0.17.6
+  native_toolchain_c: ^0.18.0
   http: ^1.4.0
   shared_preferences: ^2.5.0
-  package_info_plus: ^8.3.0
+  package_info_plus: ^9.0.1
 
 dev_dependencies:
   flutter_test:
