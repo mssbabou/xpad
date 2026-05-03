@@ -8,12 +8,10 @@ import 'package:xpad/pages/settings/octoprint_settings_page.dart';
 import 'package:xpad/pages/settings/wifi_settings_page.dart';
 
 class SettingsPage extends StatelessWidget {
-  final VoidCallback onToggleOverlay;
-  final bool showPerfOverlay;
+  final ValueNotifier<bool> showPerfOverlay;
 
   const SettingsPage({
     super.key,
-    required this.onToggleOverlay,
     required this.showPerfOverlay,
   });
 
@@ -56,10 +54,7 @@ class SettingsPage extends StatelessWidget {
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => DebugSettingsPage(
-              onToggleOverlay: onToggleOverlay,
-              showPerfOverlay: showPerfOverlay,
-            ),
+            builder: (_) => DebugSettingsPage(showPerfOverlay: showPerfOverlay),
           ),
         ),
       ),

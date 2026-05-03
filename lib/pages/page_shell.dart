@@ -10,12 +10,10 @@ import 'package:xpad/pages/octoprint_page.dart';
 import 'package:xpad/pages/settings_page.dart';
 
 class PageShell extends StatefulWidget {
-  final VoidCallback onToggleOverlay;
-  final bool showPerfOverlay;
+  final ValueNotifier<bool> showPerfOverlay;
 
   const PageShell({
     super.key,
-    required this.onToggleOverlay,
     required this.showPerfOverlay,
   });
 
@@ -111,10 +109,7 @@ class _PageShellState extends State<PageShell> with RouteAware {
                 const HomePage(),
                 const WeatherPage(),
                 const OctoPrintPage(),
-                SettingsPage(
-                  onToggleOverlay: widget.onToggleOverlay,
-                  showPerfOverlay: widget.showPerfOverlay,
-                ),
+                SettingsPage(showPerfOverlay: widget.showPerfOverlay),
               ],
             ),
             Positioned(

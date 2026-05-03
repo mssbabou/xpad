@@ -16,6 +16,8 @@ class GeneralSettingsPage extends StatefulWidget {
 class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
   final _cityController = TextEditingController();
   final _countryController = TextEditingController();
+  final _cityFocus = FocusNode();
+  final _countryFocus = FocusNode();
   final _geocodingApi = GeocodingApi();
 
   bool _isManual = false;
@@ -147,6 +149,8 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
   void dispose() {
     _cityController.dispose();
     _countryController.dispose();
+    _cityFocus.dispose();
+    _countryFocus.dispose();
     _geocodingApi.dispose();
     super.dispose();
   }
@@ -183,6 +187,8 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
             _LocationCard(
               cityController: _cityController,
               countryController: _countryController,
+              cityFocus: _cityFocus,
+              countryFocus: _countryFocus,
               isManual: _isManual,
               currentLocation: _currentLocation,
               saving: _saving,
@@ -293,6 +299,8 @@ class _DelayChip extends StatelessWidget {
 class _LocationCard extends StatelessWidget {
   final TextEditingController cityController;
   final TextEditingController countryController;
+  final FocusNode cityFocus;
+  final FocusNode countryFocus;
   final bool isManual;
   final LocationData? currentLocation;
   final bool saving;
@@ -305,6 +313,8 @@ class _LocationCard extends StatelessWidget {
   const _LocationCard({
     required this.cityController,
     required this.countryController,
+    required this.cityFocus,
+    required this.countryFocus,
     required this.isManual,
     required this.currentLocation,
     required this.saving,
@@ -356,9 +366,9 @@ class _LocationCard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
           ],
-          _Field(label: 'City', controller: cityController),
+          _Field(label: 'City', controller: cityController, focusNode: cityFocus),
           const SizedBox(height: 12),
-          _Field(label: 'Country', controller: countryController, hint: 'e.g. Germany'),
+          _Field(label: 'Country', controller: countryController, focusNode: countryFocus, hint: 'e.g. Germany'),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -400,12 +410,36 @@ class _LocationCard extends StatelessWidget {
 
 // ── Text field ────────────────────────────────────────────────────────────────
 
-class _Field extends StatelessWidget {
+class _Field extends StatefulWidget {
   final String label;
   final String? hint;
   final TextEditingController controller;
+  final FocusNode focusNode;
 
-  const _Field({required this.label, required this.controller, this.hint});
+  const _Field({required this.label, required this.controller, required this.focusNode, this.hint});
+
+  @override
+  State<_Field> createState() => _FieldState();
+}
+
+class _FieldState extends State<_Field> {
+  @override
+  void initState() {
+    super.initState();
+    widget.focusNode.addListener(_onFocusChange);
+  }
+
+  @override
+  void dispose() {
+    widget.focusNode.removeListener(_onFocusChange);
+    super.dispose();
+  }
+
+  void _onFocusChange() {
+    if (widget.focusNode.hasFocus) {
+      keyboardService.show(widget.controller, widget.focusNode);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -413,7 +447,7 @@ class _Field extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label.toUpperCase(),
+          widget.label.toUpperCase(),
           style: const TextStyle(
             color: textLo,
             fontSize: 10,
@@ -423,11 +457,12 @@ class _Field extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         TextField(
-          controller: controller,
+          controller: widget.controller,
+          focusNode: widget.focusNode,
           style: const TextStyle(color: textHi, fontSize: 15),
           cursorColor: accent,
           decoration: InputDecoration(
-            hintText: hint,
+            hintText: widget.hint,
             hintStyle: const TextStyle(color: textLo),
             filled: true,
             fillColor: bg,

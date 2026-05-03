@@ -7,12 +7,10 @@ import 'package:xpad/widgets/app_toggle.dart';
 import 'package:xpad/widgets/settings_card.dart';
 
 class DebugSettingsPage extends StatelessWidget {
-  final VoidCallback onToggleOverlay;
-  final bool showPerfOverlay;
+  final ValueNotifier<bool> showPerfOverlay;
 
   const DebugSettingsPage({
     super.key,
-    required this.onToggleOverlay,
     required this.showPerfOverlay,
   });
 
@@ -42,12 +40,7 @@ class DebugSettingsPage extends StatelessWidget {
             IntrinsicHeight(
               child: Row(
                 children: [
-                  Expanded(
-                    child: _OverlayCard(
-                      showPerfOverlay: showPerfOverlay,
-                      onToggle: onToggleOverlay,
-                    ),
-                  ),
+                  Expanded(child: _OverlayCard(showPerfOverlay: showPerfOverlay)),
                   const SizedBox(width: 16),
                   Expanded(child: _WeatherCard()),
                   const SizedBox(width: 16),
@@ -104,9 +97,8 @@ class _InfoCard extends StatelessWidget {
 // ── Performance overlay toggle ────────────────────────────────────────────────
 
 class _OverlayCard extends StatelessWidget {
-  final bool showPerfOverlay;
-  final VoidCallback onToggle;
-  const _OverlayCard({required this.showPerfOverlay, required this.onToggle});
+  final ValueNotifier<bool> showPerfOverlay;
+  const _OverlayCard({required this.showPerfOverlay});
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +111,13 @@ class _OverlayCard extends StatelessWidget {
             style: TextStyle(color: textHi, fontSize: 16, fontWeight: FontWeight.w300),
           ),
           const Spacer(),
-          AppToggle(value: showPerfOverlay, onChanged: (_) => onToggle()),
+          ValueListenableBuilder(
+            valueListenable: showPerfOverlay,
+            builder: (_, value, _) => AppToggle(
+              value: value,
+              onChanged: (_) => showPerfOverlay.value = !showPerfOverlay.value,
+            ),
+          ),
         ],
       ),
     );

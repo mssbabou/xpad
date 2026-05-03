@@ -42,16 +42,20 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  bool _showPerfOverlay = false;
+  final _showPerfOverlay = ValueNotifier(false);
 
-  void _toggleOverlay() => setState(() => _showPerfOverlay = !_showPerfOverlay);
+  @override
+  void dispose() {
+    _showPerfOverlay.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: kReleaseMode ? SystemMouseCursors.none : SystemMouseCursors.basic,
-      child: MaterialApp(
-        showPerformanceOverlay: _showPerfOverlay,
+    return ValueListenableBuilder(
+      valueListenable: _showPerfOverlay,
+      builder: (context, showOverlay, _) => MaterialApp(
+        showPerformanceOverlay: showOverlay,
         title: 'XPad',
         debugShowCheckedModeBanner: false,
         navigatorObservers: [routeObserver],
@@ -87,14 +91,17 @@ class _MyAppState extends State<MyApp> {
                   right: 0,
                   child: OnScreenKeyboard(),
                 ),
+                if (kReleaseMode)
+                  MouseRegion(
+                    cursor: SystemMouseCursors.none,
+                    opaque: false,
+                    child: const SizedBox.expand(),
+                  ),
               ],
             );
           },
         ),
-        home: PageShell(
-          onToggleOverlay: _toggleOverlay,
-          showPerfOverlay: _showPerfOverlay,
-        ),
+        home: PageShell(showPerfOverlay: _showPerfOverlay),
       ),
     );
   }
