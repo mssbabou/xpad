@@ -23,6 +23,9 @@ migrate_working_dir/
 # is commented out by default.
 #.vscode/
 
+# DevTools
+devtools_options.yaml
+
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
@@ -43,6 +46,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Generated — run `dart run tool/ffigen.dart` to regenerate
+lib/xpad.g.dart
 
 #AI
 .claude/

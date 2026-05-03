@@ -30,16 +30,6 @@ class LinearGaugePainter extends CustomPainter {
     Color(0xFFDC2626),
   ];
 
-  static Color _sample(double t) {
-    if (t <= _stops.first) return _colors.first;
-    if (t >= _stops.last)  return _colors.last;
-    for (var i = 0; i < _stops.length - 1; i++) {
-      final a = _stops[i], b = _stops[i + 1];
-      if (t <= b) return Color.lerp(_colors[i], _colors[i + 1], (t - a) / (b - a))!;
-    }
-    return _colors.last;
-  }
-
   @override
   void paint(Canvas canvas, Size size) {
     const barHeight = 20.0;
@@ -47,13 +37,6 @@ class LinearGaugePainter extends CustomPainter {
     final radius = Radius.circular(barHeight / 2);
     final rect = Rect.fromLTWH(0, barTop, size.width, barHeight);
     final barRect = RRect.fromRectAndRadius(rect, radius);
-
-    if (value > 0) {
-      final glowPaint = Paint()
-        ..color = _sample(value).withValues(alpha: 0.30)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
-      canvas.drawRRect(barRect, glowPaint);
-    }
 
     canvas.drawRRect(barRect, Paint()..color = const Color(0xFFE4E4EE));
 
@@ -74,6 +57,109 @@ class LinearGaugePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant LinearGaugePainter old) => old.value != value;
+}
+
+// ── Mustiness arc gauge ───────────────────────────────────────────────────────
+
+class MustinessGauge extends StatelessWidget {
+  final double value;
+  final double size;
+
+  const MustinessGauge({super.key, required this.value, this.size = 150});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size(size, size),
+      painter: _MustinessGaugePainter(value: value.clamp(0.0, 1.0)),
+    );
+  }
+}
+
+class _MustinessGaugePainter extends CustomPainter {
+  final double value;
+
+  _MustinessGaugePainter({required this.value});
+
+  static const _trackColor = Color(0xFFE0E0EA);
+  static const _fillStart  = Color(0xFFCDD0E6);
+  static const _fillEnd    = Color(0xFF6870B8);
+  static const _dotColor   = Color(0xFF8888A8);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 12;
+    const startAngle = 2.356;
+    const sweep     = 4.712;
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      startAngle, sweep, false,
+      Paint()
+        ..color = _trackColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 10
+        ..strokeCap = StrokeCap.round,
+    );
+
+    if (value > 0) {
+      final arcRect = Rect.fromCircle(center: center, radius: radius);
+      canvas.drawArc(
+        arcRect, startAngle, sweep * value, false,
+        Paint()
+          ..shader = LinearGradient(colors: [_fillStart, _fillEnd])
+              .createShader(arcRect)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 10
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+
+    final angle     = startAngle + value * sweep;
+    final dotCenter = Offset(
+      center.dx + radius * cos(angle),
+      center.dy + radius * sin(angle),
+    );
+    canvas.drawCircle(dotCenter, 6, Paint()..color = _dotColor);
+    canvas.drawCircle(dotCenter, 3, Paint()..color = Colors.white);
+
+    const labelStyle = TextStyle(color: textLo, fontSize: 12, fontWeight: FontWeight.w400);
+    final startPt = Offset(center.dx + radius * cos(startAngle), center.dy + radius * sin(startAngle));
+    final endPt   = Offset(center.dx + radius * cos(startAngle + sweep), center.dy + radius * sin(startAngle + sweep));
+
+    final freshP = TextPainter(
+      text: const TextSpan(text: 'Fresh', style: labelStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    freshP.paint(canvas, Offset(startPt.dx - freshP.width / 2, startPt.dy + 6));
+
+    final poorP = TextPainter(
+      text: const TextSpan(text: 'Poor', style: labelStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    poorP.paint(canvas, Offset(endPt.dx - poorP.width / 2, endPt.dy + 6));
+
+    final iconPainter = TextPainter(
+      text: TextSpan(
+        text: String.fromCharCode(Icons.air_rounded.codePoint),
+        style: TextStyle(
+          color: textLo,
+          fontSize: size.width * 0.28,
+          fontFamily: Icons.air_rounded.fontFamily,
+          package: Icons.air_rounded.fontPackage,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    iconPainter.paint(
+      canvas,
+      Offset(center.dx - iconPainter.width / 2, center.dy - iconPainter.height / 2),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _MustinessGaugePainter old) => old.value != value;
 }
 
 // ── Temperature arc gauge ─────────────────────────────────────────────────────

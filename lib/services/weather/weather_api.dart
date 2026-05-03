@@ -16,8 +16,9 @@ class WeatherApi {
 
   static const _baseUrl = 'https://api.open-meteo.com/v1/forecast';
   static const _currentParams =
-      'temperature_2m,relative_humidity_2m,weather_code';
-  static const _dailyParams = 'temperature_2m_max,temperature_2m_min';
+      'temperature_2m,apparent_temperature,relative_humidity_2m,weather_code';
+  static const _dailyParams  = 'temperature_2m_max,temperature_2m_min,sunrise,sunset';
+  static const _hourlyParams = 'temperature_2m,weather_code';
   static const _timeout = Duration(seconds: 10);
 
   WeatherApi({http.Client? client}) : _client = client ?? http.Client();
@@ -33,6 +34,8 @@ class WeatherApi {
       'longitude': longitude.toString(),
       'current': _currentParams,
       'daily': _dailyParams,
+      'hourly': _hourlyParams,
+      'forecast_days': '2',
       'timezone': 'auto',
     });
 
@@ -85,15 +88,37 @@ class WeatherApi {
       final current = json['current'] as Map<String, dynamic>;
       final daily = json['daily'] as Map<String, dynamic>;
 
+      final hourly      = json['hourly'] as Map<String, dynamic>;
+      final hourlyTimes = (hourly['time'] as List).cast<String>();
+      final hourlyTemps = (hourly['temperature_2m'] as List).cast<num>();
+      final hourlyCodes = (hourly['weather_code'] as List).cast<num>();
+
+      final now = DateTime.now();
+      final hourlyForecast = <HourlyWeather>[];
+      for (var i = 0; i < hourlyTimes.length && hourlyForecast.length < 8; i++) {
+        final t = DateTime.parse(hourlyTimes[i]);
+        if (!t.isBefore(DateTime(now.year, now.month, now.day, now.hour))) {
+          hourlyForecast.add(HourlyWeather(
+            time: t,
+            temperature: hourlyTemps[i].toDouble(),
+            condition: WeatherCondition.fromWmoCode(hourlyCodes[i].toInt()),
+          ));
+        }
+      }
+
       return Success(WeatherData(
-        currentTemperature: (current['temperature_2m'] as num).toDouble(),
-        relativeHumidity: (current['relative_humidity_2m'] as num).toInt(),
+        currentTemperature:  (current['temperature_2m'] as num).toDouble(),
+        apparentTemperature: (current['apparent_temperature'] as num).toDouble(),
+        relativeHumidity:    (current['relative_humidity_2m'] as num).toInt(),
         condition: WeatherCondition.fromWmoCode(
             (current['weather_code'] as num).toInt()),
         dailyMinTemperature:
             ((daily['temperature_2m_min'] as List).first as num).toDouble(),
         dailyMaxTemperature:
             ((daily['temperature_2m_max'] as List).first as num).toDouble(),
+        hourlyForecast: hourlyForecast,
+        sunrise: DateTime.parse((daily['sunrise'] as List).first as String),
+        sunset:  DateTime.parse((daily['sunset']  as List).first as String),
         fetchedAt: DateTime.now(),
       ));
     } catch (e) {

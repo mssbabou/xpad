@@ -1,17 +1,17 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:xpad/app/app_state.dart';
 import 'package:xpad/app/theme.dart';
 import 'package:xpad/widgets/app_toggle.dart';
+import 'package:xpad/widgets/settings_card.dart';
 
 class DebugSettingsPage extends StatelessWidget {
-  final VoidCallback onToggleOverlay;
-  final bool showPerfOverlay;
+  final ValueNotifier<bool> showPerfOverlay;
 
   const DebugSettingsPage({
     super.key,
-    required this.onToggleOverlay,
     required this.showPerfOverlay,
   });
 
@@ -26,7 +26,7 @@ class DebugSettingsPage extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Debug',
+          'Developer Menu',
           style: TextStyle(color: textHi, fontWeight: FontWeight.w600),
         ),
         elevation: 0,
@@ -41,60 +41,17 @@ class DebugSettingsPage extends StatelessWidget {
             IntrinsicHeight(
               child: Row(
                 children: [
-                  Expanded(
-                    child: _OverlayCard(
-                      showPerfOverlay: showPerfOverlay,
-                      onToggle: onToggleOverlay,
-                    ),
-                  ),
+                  Expanded(child: _OverlayCard(showPerfOverlay: showPerfOverlay)),
                   const SizedBox(width: 16),
                   Expanded(child: _WeatherCard()),
+                  const SizedBox(width: 16),
+                  Expanded(child: _AirQualityCard()),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            _ControlCard(),
             const SizedBox(height: 20),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ── Shared card shell ─────────────────────────────────────────────────────────
-
-class _Card extends StatelessWidget {
-  final String label;
-  final Widget child;
-
-  const _Card({required this.label, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: border),
-      ),
-      padding: const EdgeInsets.fromLTRB(28, 22, 28, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label.toUpperCase(),
-            style: const TextStyle(
-              color: textLo,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.6,
-            ),
-          ),
-          const SizedBox(height: 14),
-          child,
-        ],
       ),
     );
   }
@@ -117,7 +74,7 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Card(
+    return SettingsCard(
       label: 'System',
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -139,13 +96,12 @@ class _InfoCard extends StatelessWidget {
 // ── Performance overlay toggle ────────────────────────────────────────────────
 
 class _OverlayCard extends StatelessWidget {
-  final bool showPerfOverlay;
-  final VoidCallback onToggle;
-  const _OverlayCard({required this.showPerfOverlay, required this.onToggle});
+  final ValueNotifier<bool> showPerfOverlay;
+  const _OverlayCard({required this.showPerfOverlay});
 
   @override
   Widget build(BuildContext context) {
-    return _Card(
+    return SettingsCard(
       label: 'Overlay',
       child: Row(
         children: [
@@ -154,7 +110,13 @@ class _OverlayCard extends StatelessWidget {
             style: TextStyle(color: textHi, fontSize: 16, fontWeight: FontWeight.w300),
           ),
           const Spacer(),
-          AppToggle(value: showPerfOverlay, onChanged: (_) => onToggle()),
+          ValueListenableBuilder(
+            valueListenable: showPerfOverlay,
+            builder: (_, value, _) => AppToggle(
+              value: value,
+              onChanged: (_) => showPerfOverlay.value = !showPerfOverlay.value,
+            ),
+          ),
         ],
       ),
     );
@@ -189,7 +151,7 @@ class _WeatherCardState extends State<_WeatherCard> {
 
   @override
   Widget build(BuildContext context) {
-    return _Card(
+    return SettingsCard(
       label: 'Weather',
       child: GestureDetector(
         onTap: _refreshing ? null : _refresh,
@@ -220,103 +182,65 @@ class _WeatherCardState extends State<_WeatherCard> {
   }
 }
 
-// ── System control (quit / reboot / shutdown) ─────────────────────────────────
+// ── Air quality force-refresh ─────────────────────────────────────────────────
 
-class _ControlCard extends StatelessWidget {
+class _AirQualityCard extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return _Card(
-      label: 'Control',
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _ControlButton(
-            icon: Icons.close_rounded,
-            label: 'Quit',
-            onTap: () => _confirm(context,
-              title: 'Quit App?',
-              message: 'The application will close.',
-              confirmLabel: 'Quit',
-              onConfirm: () => exit(0),
-            ),
-          ),
-          _ControlButton(
-            icon: Icons.restart_alt_rounded,
-            label: 'Reboot',
-            onTap: () => _confirm(context,
-              title: 'Reboot?',
-              message: 'The Raspberry Pi will restart.',
-              confirmLabel: 'Reboot',
-              onConfirm: () => Process.run('sudo', ['reboot']),
-            ),
-          ),
-          _ControlButton(
-            icon: Icons.power_settings_new_rounded,
-            label: 'Shutdown',
-            onTap: () => _confirm(context,
-              title: 'Shutdown?',
-              message: 'The Raspberry Pi will power off.',
-              confirmLabel: 'Shutdown',
-              onConfirm: () => Process.run('sudo', ['shutdown', '-h', 'now']),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _confirm(
-    BuildContext context, {
-    required String title,
-    required String message,
-    required String confirmLabel,
-    required VoidCallback onConfirm,
-  }) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(title,
-            style: const TextStyle(color: textHi, fontWeight: FontWeight.w600)),
-        content: Text(message, style: const TextStyle(color: textLo)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel', style: TextStyle(color: textLo)),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: accent),
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(confirmLabel),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) onConfirm();
-  }
+  State<_AirQualityCard> createState() => _AirQualityCardState();
 }
 
-class _ControlButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  const _ControlButton({required this.icon, required this.label, required this.onTap});
+class _AirQualityCardState extends State<_AirQualityCard> {
+  bool _refreshing = false;
+  String? _lastAqi;
+
+  Future<void> _refresh() async {
+    setState(() => _refreshing = true);
+    airQuality.clearCache();
+    final result = await airQuality.getCurrentAirQuality(forceRefresh: true);
+    if (mounted) {
+      final label = result.when(
+        success: (data) => 'AQI ${data.europeanAqi} — ${data.level.label}',
+        failure: (e) => e.message,
+      );
+      setState(() {
+        _refreshing = false;
+        _lastAqi = label;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(label),
+        backgroundColor: textHi,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+      ));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(icon, size: 28, color: accent),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(color: textHi, fontSize: 12, letterSpacing: 0.5),
-          ),
-        ],
+    return SettingsCard(
+      label: 'Air Quality',
+      child: GestureDetector(
+        onTap: _refreshing ? null : _refresh,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (_refreshing)
+              const SizedBox(
+                width: 36,
+                height: 36,
+                child: CircularProgressIndicator(color: accent, strokeWidth: 2),
+              )
+            else
+              Icon(Icons.air_rounded, size: 36, color: textHi),
+            const SizedBox(height: 8),
+            Text(
+              _lastAqi ?? 'Refresh',
+              style: const TextStyle(color: textLo, fontSize: 12, letterSpacing: 0.8),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

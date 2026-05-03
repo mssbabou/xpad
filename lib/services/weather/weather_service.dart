@@ -16,17 +16,19 @@ export 'weather_models.dart';
 ///   - Combining multiple API calls into richer models
 class WeatherService {
   final WeatherApi _api;
-  final double latitude;
-  final double longitude;
+  double _latitude;
+  double _longitude;
 
   WeatherData? _cache;
   static const _cacheTtl = Duration(minutes: 10);
 
   WeatherService({
-    required this.latitude,
-    required this.longitude,
+    required double latitude,
+    required double longitude,
     WeatherApi? api,
-  }) : _api = api ?? WeatherApi();
+  })  : _latitude = latitude,
+        _longitude = longitude,
+        _api = api ?? WeatherApi();
 
   /// Get current weather snapshot.
   ///
@@ -43,8 +45,8 @@ class WeatherService {
     }
 
     final result = await _api.fetchCurrentWeather(
-      latitude: latitude,
-      longitude: longitude,
+      latitude: _latitude,
+      longitude: _longitude,
     );
 
     if (result case Success(:final data)) {
@@ -63,6 +65,13 @@ class WeatherService {
     yield await getCurrentWeather();
     yield* Stream.periodic(interval)
         .asyncMap((_) => getCurrentWeather());
+  }
+
+  /// Update coordinates and clear the cache so the next fetch uses the new location.
+  void updateLocation(double latitude, double longitude) {
+    _latitude = latitude;
+    _longitude = longitude;
+    _cache = null;
   }
 
   /// Discard cached data. Useful after a location change.
