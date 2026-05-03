@@ -56,6 +56,7 @@ class _MyAppState extends State<MyApp> {
         debugShowCheckedModeBanner: false,
         navigatorObservers: [routeObserver],
         theme: ThemeData(
+          fontFamily: 'Adwaita Sans',
           scaffoldBackgroundColor: bg,
           colorScheme: const ColorScheme.light(surface: surface, primary: accent),
         ),
