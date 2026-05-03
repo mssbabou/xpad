@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:xpad/app/app_state.dart';
@@ -48,8 +49,6 @@ class DebugSettingsPage extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            _ControlCard(),
             const SizedBox(height: 20),
           ],
         ),
@@ -242,108 +241,6 @@ class _AirQualityCardState extends State<_AirQualityCard> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ── System control (quit / reboot / shutdown) ─────────────────────────────────
-
-class _ControlCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SettingsCard(
-      label: 'Control',
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _ControlButton(
-            icon: Icons.close_rounded,
-            label: 'Quit',
-            onTap: () => _confirm(context,
-              title: 'Quit App?',
-              message: 'The application will close.',
-              confirmLabel: 'Quit',
-              onConfirm: () => exit(0),
-            ),
-          ),
-          _ControlButton(
-            icon: Icons.restart_alt_rounded,
-            label: 'Reboot',
-            onTap: () => _confirm(context,
-              title: 'Reboot?',
-              message: 'The Raspberry Pi will restart.',
-              confirmLabel: 'Reboot',
-              onConfirm: () => Process.run('sudo', ['reboot']),
-            ),
-          ),
-          _ControlButton(
-            icon: Icons.power_settings_new_rounded,
-            label: 'Shutdown',
-            onTap: () => _confirm(context,
-              title: 'Shutdown?',
-              message: 'The Raspberry Pi will power off.',
-              confirmLabel: 'Shutdown',
-              onConfirm: () => Process.run('sudo', ['shutdown', '-h', 'now']),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _confirm(
-    BuildContext context, {
-    required String title,
-    required String message,
-    required String confirmLabel,
-    required VoidCallback onConfirm,
-  }) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(title,
-            style: const TextStyle(color: textHi, fontWeight: FontWeight.w600)),
-        content: Text(message, style: const TextStyle(color: textLo)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel', style: TextStyle(color: textLo)),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: accent),
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(confirmLabel),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) onConfirm();
-  }
-}
-
-class _ControlButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  const _ControlButton({required this.icon, required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(icon, size: 28, color: accent),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(color: textHi, fontSize: 12, letterSpacing: 0.5),
-          ),
-        ],
       ),
     );
   }

@@ -11,32 +11,34 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(32),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            flex: 3,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          flex: 3,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 32, bottom: 32, left: 32),
             child: Align(
               alignment: Alignment.centerLeft,
               child: _Clock(),
             ),
           ),
-          const SizedBox(width: 48),
-          Expanded(
-            flex: 2,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _WeatherSnippet(),
-                _MustinessSection(),
-              ],
-            ),
+        ),
+        const SizedBox(width: 48),
+        Expanded(
+          flex: 2,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Spacer(),
+              _WeatherSnippet(),
+              const Spacer(),
+              _MustinessSection(),
+              const Spacer(),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -70,7 +72,7 @@ class _Clock extends StatelessWidget {
                   '$h:$m',
                   style: const TextStyle(
                     color: textHi,
-                    fontSize: 117,
+                    fontSize: 154,
                     fontWeight: FontWeight.w200,
                     letterSpacing: -4,
                     height: 1,
@@ -83,7 +85,7 @@ class _Clock extends StatelessWidget {
                     ':$s',
                     style: const TextStyle(
                       color: textLo,
-                      fontSize: 42,
+                      fontSize: 55,
                       fontWeight: FontWeight.w300,
                       height: 1,
                     ),
@@ -96,7 +98,7 @@ class _Clock extends StatelessWidget {
               date,
               style: const TextStyle(
                 color: textLo,
-                fontSize: 17,
+                fontSize: 22,
                 fontWeight: FontWeight.w400,
                 letterSpacing: 0.3,
               ),
@@ -127,13 +129,13 @@ class _WeatherSnippet extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(data.condition.icon, size: 40, color: textLo),
+              Icon(data.condition.icon, size: 53, color: textLo),
               const SizedBox(height: 8),
               Text(
                 '${data.currentTemperature.round()}°C',
                 style: const TextStyle(
                   color: textHi,
-                  fontSize: 36,
+                  fontSize: 47,
                   fontWeight: FontWeight.w200,
                   height: 1,
                 ),
@@ -141,7 +143,7 @@ class _WeatherSnippet extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 data.condition.label,
-                style: const TextStyle(color: textLo, fontSize: 13),
+                style: const TextStyle(color: textLo, fontSize: 18),
               ),
             ],
           ),
