@@ -34,6 +34,8 @@ class SpotifyService {
   SpotifyCredentials get credentials => _credentials;
   SpotifyPlaybackState? get lastState => _lastState;
 
+  static const _tokenDropPath = '/tmp/xpad_spotify_token';
+
   Future<void> initialize() async {
     final prefs = await SharedPreferences.getInstance();
     final expiresAtMs = prefs.getInt(_keyExpiresAt);
@@ -45,6 +47,22 @@ class SpotifyService {
           ? DateTime.fromMillisecondsSinceEpoch(expiresAtMs)
           : null,
     );
+    await _importDropFile();
+  }
+
+  /// Returns true if a token was imported from the drop file.
+  Future<bool> importDropFile() async {
+    return _importDropFile();
+  }
+
+  Future<bool> _importDropFile() async {
+    final file = File(_tokenDropPath);
+    if (!await file.exists()) return false;
+    final token = (await file.readAsString()).trim();
+    await file.delete();
+    if (token.isEmpty) return false;
+    await saveRefreshToken(token);
+    return true;
   }
 
   Future<void> saveCredentials(SpotifyCredentials creds) async {
@@ -81,6 +99,13 @@ class SpotifyService {
       accessToken: accessToken,
       refreshToken: refreshToken,
       expiresAt: DateTime.now().add(const Duration(hours: 1)),
+    ));
+  }
+
+  Future<void> saveRefreshToken(String refreshToken) async {
+    await saveCredentials(_credentials.copyWith(
+      refreshToken: refreshToken,
+      clearAccessToken: true,
     ));
   }
 
