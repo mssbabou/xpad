@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:xpad/app/app_state.dart';
 import 'package:xpad/app/theme.dart';
-import 'package:xpad/pages/home_page.dart';
+import 'package:xpad/pages/page_shell.dart';
 import 'package:xpad/services/air_quality/air_quality_service.dart';
 import 'package:xpad/services/location/location_service.dart';
 import 'package:xpad/services/weather/weather_service.dart';
@@ -90,7 +90,7 @@ class _MyAppState extends State<MyApp> {
             );
           },
         ),
-        home: HomePage(
+        home: PageShell(
           onToggleOverlay: _toggleOverlay,
           showPerfOverlay: _showPerfOverlay,
         ),

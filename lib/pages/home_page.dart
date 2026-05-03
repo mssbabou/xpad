@@ -1,148 +1,192 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:xpad/app/app_state.dart';
 import 'package:xpad/app/theme.dart';
-import 'package:xpad/pages/smart_home_page.dart';
-import 'package:xpad/pages/weather_page.dart';
-import 'package:xpad/pages/dashboard_page.dart';
-import 'package:xpad/pages/octoprint_page.dart';
-import 'package:xpad/pages/settings_page.dart';
+import 'package:xpad/services/air_quality/air_quality_service.dart';
+import 'package:xpad/services/weather/weather_service.dart';
+import 'package:xpad/widgets/gauges.dart';
+import 'package:xpad/widgets/weather_condition_icon.dart';
 
-class HomePage extends StatefulWidget {
-  final VoidCallback onToggleOverlay;
-  final bool showPerfOverlay;
-
-  const HomePage({
-    super.key,
-    required this.onToggleOverlay,
-    required this.showPerfOverlay,
-  });
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> with RouteAware {
-  final _ctrl = PageController(initialPage: 1);
-  int _page = 1;
-  bool _dotsVisible = false;
-  Timer? _hideTimer;
-  Timer? _inactivityTimer;
-  bool _returnEnabled = true;
-  int _returnDelaySeconds = 300;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl.addListener(_onScroll);
-    _loadReturnConfig();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    routeObserver.subscribe(this, ModalRoute.of(context)!);
-  }
-
-  @override
-  void didPushNext() => _inactivityTimer?.cancel();
-
-  @override
-  void didPopNext() => _resetInactivityTimer();
-
-  Future<void> _loadReturnConfig() async {
-    final enabled = await displayService.getReturnToHome();
-    final delay = await displayService.getReturnDelay();
-    if (!mounted) return;
-    _returnEnabled = enabled;
-    _returnDelaySeconds = delay;
-    _resetInactivityTimer();
-  }
-
-  void _resetInactivityTimer() {
-    _inactivityTimer?.cancel();
-    if (!_returnEnabled) return;
-    _inactivityTimer = Timer(Duration(seconds: _returnDelaySeconds), _goHome);
-  }
-
-  void _goHome() {
-    if (!mounted || _ctrl.page?.round() == 1) return;
-    _ctrl.animateToPage(1,
-        duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
-  }
-
-  void _onScroll() {
-    final p = _ctrl.page?.round() ?? 0;
-    if (p != _page) {
-      setState(() => _page = p);
-      // Reload config when leaving settings in case it changed
-      if (_page != 4) _loadReturnConfig();
-    }
-
-    if (!_dotsVisible) setState(() => _dotsVisible = true);
-    _hideTimer?.cancel();
-    _hideTimer = Timer(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _dotsVisible = false);
-    });
-  }
-
-  @override
-  void dispose() {
-    routeObserver.unsubscribe(this);
-    _hideTimer?.cancel();
-    _inactivityTimer?.cancel();
-    _ctrl.removeListener(_onScroll);
-    _ctrl.dispose();
-    super.dispose();
-  }
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Listener(
-      onPointerDown: (_) => _resetInactivityTimer(),
-      child: Scaffold(
-      backgroundColor: bg,
-      body: Stack(
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          PageView(
-            controller: _ctrl,
-            children: [
-              const SmartHomePage(),
-              const DashboardPage(),
-              const WeatherPage(),
-              const OctoPrintPage(),
-              SettingsPage(
-                onToggleOverlay: widget.onToggleOverlay,
-                showPerfOverlay: widget.showPerfOverlay,
-              ),
-            ],
+          Expanded(
+            flex: 3,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: _Clock(),
+            ),
           ),
-          Positioned(
-            bottom: 14,
-            left: 0,
-            right: 0,
-            child: AnimatedOpacity(
-              opacity: _dotsVisible ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 300),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (i) => Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: 7,
-                  height: 7,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: i == _page
-                        ? accent
-                        : textLo.withValues(alpha: 0.3),
-                  ),
-                )),
-              ),
+          const SizedBox(width: 48),
+          Expanded(
+            flex: 2,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _WeatherSnippet(),
+                _MustinessSection(),
+              ],
             ),
           ),
         ],
       ),
-    ));
+    );
+  }
+}
+
+// ── Clock ─────────────────────────────────────────────────────────────────────
+
+class _Clock extends StatelessWidget {
+  static const _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  static const _months   = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now()),
+      builder: (context, snapshot) {
+        final now  = snapshot.data ?? DateTime.now();
+        final h    = now.hour.toString().padLeft(2, '0');
+        final m    = now.minute.toString().padLeft(2, '0');
+        final s    = now.second.toString().padLeft(2, '0');
+        final date = '${_weekdays[now.weekday - 1]}, ${now.day} ${_months[now.month - 1]} ${now.year}';
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  '$h:$m',
+                  style: const TextStyle(
+                    color: textHi,
+                    fontSize: 117,
+                    fontWeight: FontWeight.w200,
+                    letterSpacing: -4,
+                    height: 1,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Text(
+                    ':$s',
+                    style: const TextStyle(
+                      color: textLo,
+                      fontSize: 42,
+                      fontWeight: FontWeight.w300,
+                      height: 1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              date,
+              style: const TextStyle(
+                color: textLo,
+                fontSize: 17,
+                fontWeight: FontWeight.w400,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// ── Weather snippet ───────────────────────────────────────────────────────────
+
+class _WeatherSnippet extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<Result<WeatherData>>(
+      stream: weather.weatherStream(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const SizedBox(
+            height: 80,
+            child: Center(child: CircularProgressIndicator(color: textLo, strokeWidth: 1.5)),
+          );
+        }
+        return snapshot.data!.when(
+          success: (data) => Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(data.condition.icon, size: 40, color: textLo),
+              const SizedBox(height: 8),
+              Text(
+                '${data.currentTemperature.round()}°C',
+                style: const TextStyle(
+                  color: textHi,
+                  fontSize: 36,
+                  fontWeight: FontWeight.w200,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                data.condition.label,
+                style: const TextStyle(color: textLo, fontSize: 13),
+              ),
+            ],
+          ),
+          failure: (e) => Text(e.message, style: const TextStyle(color: textLo, fontSize: 13)),
+        );
+      },
+    );
+  }
+}
+
+// ── Mustiness gauge ───────────────────────────────────────────────────────────
+
+class _MustinessSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<Result<AirQualityData>>(
+      stream: airQuality.airQualityStream(),
+      builder: (context, snapshot) {
+        final value = snapshot.data?.when(
+          success: (data) => data.aqiFraction,
+          failure: (_) => 0.0,
+        ) ?? 0.0;
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'AIR QUALITY',
+              style: TextStyle(
+                color: textLo,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.6,
+              ),
+            ),
+            const SizedBox(height: 8),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final size = constraints.maxWidth.clamp(80.0, 180.0);
+                return MustinessGauge(value: value, size: size);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
