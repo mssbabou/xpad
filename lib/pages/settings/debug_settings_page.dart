@@ -262,7 +262,7 @@ class _Stat extends StatelessWidget {
           label,
           style: const TextStyle(
             color: textLo,
-            fontSize: 10,
+            fontSize: 12,
             letterSpacing: 1.0,
             fontWeight: FontWeight.w600,
           ),

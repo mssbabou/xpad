@@ -32,7 +32,7 @@ class SettingsCard extends StatelessWidget {
                 label.toUpperCase(),
                 style: const TextStyle(
                   color: textLo,
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.6,
                 ),

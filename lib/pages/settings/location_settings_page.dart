@@ -162,7 +162,7 @@ class _LocationSettingsPageState extends State<LocationSettingsPage> {
                         _isManual ? 'Manual' : 'Auto',
                         style: TextStyle(
                           color: _isManual ? accent : textLo,
-                          fontSize: 10,
+                          fontSize: 12,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1.2,
                         ),
@@ -248,7 +248,7 @@ class _FieldState extends State<_Field> {
       children: [
         Text(
           widget.label.toUpperCase(),
-          style: const TextStyle(color: textLo, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.2),
+          style: const TextStyle(color: textLo, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.2),
         ),
         const SizedBox(height: 6),
         TextField(

@@ -173,7 +173,7 @@ class _ConnectedCard extends StatelessWidget {
                 'INFO',
                 style: TextStyle(
                   color: accent,
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.4,
                 ),
@@ -192,8 +192,8 @@ class _ConnectedCard extends StatelessWidget {
                     network!.ssid,
                     style: const TextStyle(
                       color: textHi,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w200,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
                       height: 1,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -238,7 +238,7 @@ class _AvailableCard extends StatelessWidget {
                 'SCAN',
                 style: TextStyle(
                   color: accent,
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.4,
                 ),
@@ -292,7 +292,7 @@ class _NetworkRow extends StatelessWidget {
               padding: EdgeInsets.only(right: 10),
               child: Text(
                 'WPA',
-                style: TextStyle(color: textLo, fontSize: 10, letterSpacing: 0.8),
+                style: TextStyle(color: textLo, fontSize: 12, letterSpacing: 0.8),
               ),
             ),
           _SignalBars(signal: network.signal),
@@ -402,7 +402,7 @@ class _InfoRow extends StatelessWidget {
           label,
           style: const TextStyle(
             color: textLo,
-            fontSize: 10,
+            fontSize: 12,
             letterSpacing: 1.0,
             fontWeight: FontWeight.w600,
           ),

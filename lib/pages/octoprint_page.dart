@@ -196,7 +196,7 @@ class _LeftColumn extends StatelessWidget {
             const Text('FILES',
                 style: TextStyle(
                     color: textLo,
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1.6)),
             const Spacer(),
@@ -281,7 +281,7 @@ class _StatusCard extends StatelessWidget {
               const Text('PRINTER',
                   style: TextStyle(
                       color: textLo,
-                      fontSize: 10,
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.6)),
               const Spacer(),
@@ -508,7 +508,7 @@ class _FileRow extends StatelessWidget {
                           color: textHi, fontSize: 13, fontWeight: FontWeight.w400, height: 1.3)),
                   if (sub.isNotEmpty) ...[
                     const SizedBox(height: 2),
-                    Text(sub, style: const TextStyle(color: textLo, fontSize: 10)),
+                    Text(sub, style: const TextStyle(color: textLo, fontSize: 12)),
                   ],
                 ],
               ),
@@ -558,7 +558,7 @@ class _RightColumn extends StatelessWidget {
         const Text('TEMPERATURES',
             style: TextStyle(
                 color: textLo,
-                fontSize: 10,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1.6)),
         const SizedBox(height: 10),
@@ -574,7 +574,7 @@ class _RightColumn extends StatelessWidget {
         const Text('PREHEAT',
             style: TextStyle(
                 color: textLo,
-                fontSize: 10,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1.6)),
         const SizedBox(height: 10),
@@ -639,7 +639,7 @@ class _TempCard extends StatelessWidget {
           Text(label,
               style: const TextStyle(
                   color: textLo,
-                  fontSize: 9,
+                  fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.4)),
           const SizedBox(height: 8),
@@ -707,7 +707,7 @@ class _PresetBtn extends StatelessWidget {
                     fontWeight: FontWeight.w700)),
             Text('${preset.hotend}° / ${preset.bed}°',
                 style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7), fontSize: 9)),
+                    color: Colors.white.withValues(alpha: 0.7), fontSize: 11)),
           ],
         ),
       ),

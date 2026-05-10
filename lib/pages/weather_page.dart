@@ -196,7 +196,7 @@ class _StatBox extends StatelessWidget {
                 label.toUpperCase(),
                 style: const TextStyle(
                   color: textLo,
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.8,
                 ),
@@ -293,7 +293,7 @@ class _SunBox extends StatelessWidget {
                 nextLabel.toUpperCase(),
                 style: const TextStyle(
                   color: textLo,
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.8,
                 ),
@@ -315,7 +315,7 @@ class _SunBox extends StatelessWidget {
             '${otherLabel[0].toLowerCase()}${otherLabel.substring(1)} ${_hhmm(otherTime)}',
             style: const TextStyle(
               color: textLo,
-              fontSize: 10,
+              fontSize: 12,
               fontWeight: FontWeight.w400,
             ),
           ),

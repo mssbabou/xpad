@@ -55,7 +55,7 @@ class _IndoorSection extends StatelessWidget {
               'SMART HOME',
               style: TextStyle(
                 color: textLo,
-                fontSize: 10,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1.6,
               ),
@@ -142,8 +142,8 @@ class _IndoorSection extends StatelessWidget {
             const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Fresh', style: TextStyle(color: textLo, fontSize: 11)),
-                Text('Poor', style: TextStyle(color: textLo, fontSize: 11)),
+                Text('Fresh', style: TextStyle(color: textLo, fontSize: 12)),
+                Text('Poor', style: TextStyle(color: textLo, fontSize: 12)),
               ],
             ),
           ],
@@ -333,7 +333,7 @@ class _LightTile extends StatelessWidget {
               light.name,
               style: TextStyle(
                 color: on ? const Color(0xFF7A5800) : textLo,
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: FontWeight.w500,
                 height: 1.3,
               ),
@@ -390,7 +390,7 @@ class _StatChip extends StatelessWidget {
                   unit,
                   style: const TextStyle(
                     color: textLo,
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -402,7 +402,7 @@ class _StatChip extends StatelessWidget {
             label,
             style: const TextStyle(
               color: textLo,
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.8,
             ),

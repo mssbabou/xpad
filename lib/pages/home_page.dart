@@ -174,7 +174,7 @@ class _MustinessSection extends StatelessWidget {
               'AIR QUALITY',
               style: TextStyle(
                 color: textLo,
-                fontSize: 10,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1.6,
               ),

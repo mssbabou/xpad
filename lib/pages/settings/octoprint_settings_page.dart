@@ -95,12 +95,7 @@ class _OctoPrintSettingsPageState extends State<OctoPrintSettingsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _Field(controller: _keyCtrl, focusNode: _keyFocus, hint: 'Paste API key', obscure: true),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Found in OctoPrint → Settings → API → Global API Key',
-                    style: TextStyle(color: textLo, fontSize: 11, height: 1.5),
-                  ),
+                  _Field(controller: _keyCtrl, focusNode: _keyFocus, hint: 'Paste API key'),
                 ],
               ),
             ),
@@ -179,6 +174,7 @@ class _FieldState extends State<_Field> {
   }
 
   void _onFocusChange() {
+    setState(() {});
     if (widget.focusNode.hasFocus) {
       keyboardService.show(widget.controller, widget.focusNode,
           obscure: widget.obscure);
@@ -194,7 +190,7 @@ class _FieldState extends State<_Field> {
       style:
           const TextStyle(color: textHi, fontSize: 15, fontWeight: FontWeight.w400),
       decoration: InputDecoration(
-        hintText: widget.hint,
+        hintText: widget.focusNode.hasFocus ? null : widget.hint,
         hintStyle: const TextStyle(color: textLo, fontSize: 15),
         border: InputBorder.none,
         isDense: true,
